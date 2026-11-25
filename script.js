@@ -28,10 +28,10 @@ const products = [
   {name:'Flick', type:'Electrical solutions', group:'electrical', image:images.flick, detail:'Modern switches and sockets with minimal forms, thoughtful detailing and everyday functionality.', slug:'/flick/'},
 ];
 const slides = [
-  {image:images.facade, alt:'Concrete screen wall in an architectural setting', title:'Concrete masonry for contemporary construction.', link:'Explore masonry', slug:'/concrete-hollow-block', caption:'MASONRY / DESIGN INSPIRATION'},
-  {image:images.bench, alt:'Interlocking paving in a landscaped driveway', title:'Shape the outdoors with versatile paving solutions.', link:'Explore unipavers', slug:'/unipavers', caption:'PAVING / DESIGN INSPIRATION'},
-  {image:images.paving, crop:'crop-right', alt:'Modern outdoor tiled surfaces', title:'Thoughtful finishes for everyday outdoor spaces.', link:'Explore pavement tiles', slug:'/pavement-tiles', caption:'SURFACES / DESIGN INSPIRATION'},
-  {image:images.flick, alt:'Flick white electrical switch', title:'Purposeful electrical details for modern interiors.', link:'Discover Flick', slug:'/flick/', caption:'FLICK / ELECTRICAL SOLUTIONS'},
+  {image:'./hero-masonry.webp', alt:'Architectural concrete masonry', title:'Concrete masonry for contemporary construction.', link:'Explore masonry', slug:'/concrete-hollow-block', caption:'MASONRY / DESIGN INSPIRATION'},
+  {image:'./hero-paving.webp', alt:'Outdoor interlocking paving', title:'Shape the outdoors with versatile paving solutions.', link:'Explore unipavers', slug:'/unipavers', caption:'PAVING / DESIGN INSPIRATION'},
+  {image:'./hero-surfaces.webp', alt:'Outdoor surface finishes', title:'Thoughtful finishes for everyday outdoor spaces.', link:'Explore pavement tiles', slug:'/pavement-tiles', caption:'SURFACES / DESIGN INSPIRATION'},
+  {image:'./hero-electrical.webp', alt:'Electrical switches and finishes', title:'Purposeful electrical details for modern interiors.', link:'Discover Flick', slug:'/flick/', caption:'FLICK / ELECTRICAL SOLUTIONS'},
 ];
 const gallery = [
   {name:'Architectural screens', type:'architecture', image:images.facade, credit:'Design inspiration · bti blog'},
@@ -123,7 +123,7 @@ function bindFilters(sel,key,render){$$(sel).forEach(btn=>btn.addEventListener('
 bindFilters('[data-product-filter]','productFilter',renderProducts);bindFilters('[data-gallery]','gallery',renderGallery);
 // Eight enquiry-led support topics; no promises of unconfirmed services.
 const support=[
- ['Product selection','Discuss material choices for your project.',images.hollow,'Product consultation'],
+ ['Product selection','Discuss material choices for your project.','./every-detail-every-stage.webp','Product consultation','Project team measuring a concrete block alongside paving and electrical samples'],
  ['Dimensions & variants','Explore product sizes, types and available variants.',images.solid,'Concrete Solid Brick'],
  ['Application guidance','Explore suitable applications for masonry and paving.',images.facade,'Product consultation'],
  ['Colour & finish options','Enquire about available paving colours and finishes.',images.tile,'Pavement Tiles'],
@@ -134,7 +134,7 @@ const support=[
 ];
 const supportList=$('#service-list'), supportMedia=$('#service-media'), supportPause=$('#service-pause');let supportActive=-1,supportTimer=0,supportPaused=reduced,supportVisible=false,supportHover=false,supportTween=null;
 supportList.innerHTML=support.map((s,i)=>`<article class="service-row" data-rise><button class="service-select" data-support="${i}" aria-pressed="false"><span class="service-num">${pad(i+1)}</span><div><h3>${s[0]}</h3><p>${s[1]}</p></div><span class="support-arrow">↗</span></button><button class="support-enquire" data-quote data-interest="${s[3]}">Enquire ↗</button></article>`).join('');
-function selectSupport(i){if(i===supportActive)return;supportActive=i;const item=support[i];$$('.service-select').forEach((b,n)=>{b.setAttribute('aria-pressed',String(n===i));b.closest('.service-row').classList.toggle('is-current',n===i);});$('#service-title').textContent=item[0];$('#service-index').textContent=pad(i+1)+' / 08';if(supportTween)supportTween.kill();const existing=$$('img',supportMedia);const old=existing.at(-1);existing.slice(0,-1).forEach(im=>im.remove());if(old){old.getAnimations().forEach(a=>a.cancel());if(gs)gs.set(old,{clearProps:'clipPath,transform'});old.classList.remove('support-incoming');}const next=new Image();next.src=item[2];next.alt=item[0];next.className='support-incoming';supportMedia.append(next);if(old){supportMedia.querySelectorAll('img').forEach(im=>{if(im!==old&&im!==next)im.remove();});if(nativeMotion){if(motion){supportTween=gs.fromTo(next,{clipPath:'inset(0 100% 0 0)',scale:1.06},{clipPath:'inset(0 0% 0 0)',scale:1,duration:.8,ease:'power3.inOut',onComplete:()=>{old.remove();next.classList.remove('support-incoming');}});}else{const a=next.animate([{clipPath:'inset(0 100% 0 0)',transform:'scale(1.06)'},{clipPath:'inset(0 0% 0 0)',transform:'scale(1)'}],{duration:800,easing:'cubic-bezier(.77,0,.18,1)'});a.onfinish=()=>{old.remove();next.classList.remove('support-incoming');};}}else{old.remove();next.classList.remove('support-incoming');}}}
+function selectSupport(i){if(i===supportActive)return;supportActive=i;const item=support[i];$$('.service-select').forEach((b,n)=>{b.setAttribute('aria-pressed',String(n===i));b.closest('.service-row').classList.toggle('is-current',n===i);});$('#service-title').textContent=item[0];$('#service-index').textContent=pad(i+1)+' / 08';if(supportMedia.children.length===1&&supportMedia.firstElementChild.getAttribute('src')===item[2])return;if(supportTween)supportTween.kill();const existing=$$('img',supportMedia);const old=existing.at(-1);existing.slice(0,-1).forEach(im=>im.remove());if(old){old.getAnimations().forEach(a=>a.cancel());if(gs)gs.set(old,{clearProps:'clipPath,transform'});old.classList.remove('support-incoming');}const next=new Image();next.src=item[2];next.alt=item[4]||item[0];next.className='support-incoming';supportMedia.append(next);if(old){supportMedia.querySelectorAll('img').forEach(im=>{if(im!==old&&im!==next)im.remove();});if(nativeMotion){if(motion){supportTween=gs.fromTo(next,{clipPath:'inset(0 100% 0 0)',scale:1.06},{clipPath:'inset(0 0% 0 0)',scale:1,duration:.8,ease:'power3.inOut',onComplete:()=>{old.remove();next.classList.remove('support-incoming');}});}else{const a=next.animate([{clipPath:'inset(0 100% 0 0)',transform:'scale(1.06)'},{clipPath:'inset(0 0% 0 0)',transform:'scale(1)'}],{duration:800,easing:'cubic-bezier(.77,0,.18,1)'});a.onfinish=()=>{old.remove();next.classList.remove('support-incoming');};}}else{old.remove();next.classList.remove('support-incoming');}}}
 function scheduleSupport(){clearTimeout(supportTimer);if(!supportPaused&&supportVisible&&!supportHover&&!document.hidden)supportTimer=setTimeout(()=>{selectSupport((supportActive+1)%support.length);scheduleSupport();},5000);}
 $$('.service-select').forEach(b=>{const fn=()=>{selectSupport(Number(b.dataset.support));scheduleSupport();};b.addEventListener('click',fn);b.addEventListener('focus',fn);b.addEventListener('mouseenter',()=>{if(hoverMedia.matches)fn();});});supportList.addEventListener('mouseenter',()=>{supportHover=true;scheduleSupport();});supportList.addEventListener('mouseleave',()=>{supportHover=false;scheduleSupport();});supportPause.addEventListener('click',()=>{supportPaused=!supportPaused;supportPause.textContent=supportPaused?'▷':'Ⅱ';supportPause.setAttribute('aria-pressed',String(supportPaused));supportPause.setAttribute('aria-label',supportPaused?'Resume support image rotation':'Pause support image rotation');scheduleSupport();});if(reduced){supportPause.textContent='▷';supportPause.setAttribute('aria-pressed','true');supportPause.setAttribute('aria-label','Resume support image rotation');}
 selectSupport(0);new IntersectionObserver(([e])=>{supportVisible=e.isIntersecting;scheduleSupport();},{threshold:.15}).observe($('.service-visual'));document.addEventListener('visibilitychange',scheduleSupport);
@@ -162,12 +162,12 @@ function cancelReveal(rec){rec.animations.forEach(a=>{if(a.kill)a.kill();else a.
 function playReveal(rec){if(rec.visible)return;rec.visible=true;rec.el.dataset.revealState='playing';cancelReveal(rec);if(!nativeMotion)return;const direction=rec.direction||1;rec.parts.forEach(p=>{const delay=p.delay+(rec.el.matches('.product-card,.gallery-card')?Math.min(2,Array.from(rec.el.parentElement.children).indexOf(rec.el)%3)*.075:0);const from={...p.from};let frames=p.frames;if(direction<0){if('yPercent' in from){from.yPercent=-108;frames=[{transform:'translateY(-108%)',opacity:0},p.frames[1]];}else if('y' in from){from.y=-22;frames=[{transform:'translateY(-22px)',opacity:0},p.frames[1]];}else if('clipPath' in from){from.clipPath='inset(98% 0 0 0)';frames=[{clipPath:from.clipPath},p.frames[1]];}}if(motion){const a=gs.fromTo(p.n,from,{...p.to,duration:p.duration,delay,ease:'power3.out',overwrite:'auto',clearProps:'transform,opacity,clipPath'});rec.animations.push(a);}else{rec.animations.push(p.n.animate(frames,{duration:p.duration*1000,delay:delay*1000,easing:ease,fill:'backwards'}));}});}
 const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{const rec=revealRecords.get(e.target);if(!rec)return;if(e.isIntersecting){playReveal(rec);}else if(e.boundingClientRect.bottom<=0||e.boundingClientRect.top>=window.innerHeight){cancelReveal(rec);rec.visible=false;rec.direction=e.boundingClientRect.bottom<=0?-1:1;rec.el.dataset.revealState='ready';}});},{threshold:0});
 function registerReveals(root=document){for(const [el,rec] of revealRecords){if(!el.isConnected){observer.unobserve(el);cancelReveal(rec);revealRecords.delete(el);}}if(!nativeMotion)return;$$(revealSelector,root).forEach(el=>{if(revealRecords.has(el))return;const rec={el,parts:getParts(el),animations:[],visible:false,direction:1};revealRecords.set(el,rec);observer.observe(el);});}
-// Gallery: dedicated reversible cinematic entrance + independent scroll-scrub parallax.
+// Gallery: opposing horizontal movement and independent scroll-linked image parallax.
 const galleryMotion=[];
 const animatedGalleryCards=()=>$$('.gallery-card[data-gallery-index="0"],.gallery-card[data-gallery-index="1"]',galleryGrid);
-function destroyGalleryMotion(){destroyGalleryPair();galleryMotion.splice(0).forEach(r=>{r.trigger?.kill();r.parallax?.scrollTrigger?.kill();r.parallax?.kill();r.observer?.disconnect();r.timeline?.kill();r.animations?.forEach(a=>a.cancel());if(r.tick)window.removeEventListener('scroll',r.tick);});}
+function destroyGalleryMotion(){destroyGalleryPair();galleryMotion.splice(0).forEach(r=>{r.parallax?.scrollTrigger?.kill();r.parallax?.kill();if(r.tick)window.removeEventListener('scroll',r.tick);});}
 // Shared scroll progress moves the first-row cards in opposite directions.
-// CSS translate is separate from GSAP transform/clipPath used by entrance and hover.
+// CSS translate keeps card movement separate from image parallax and hover.
 let galleryPairCleanup=null;
 function destroyGalleryPair(){galleryPairCleanup?.();galleryPairCleanup=null;}
 function setupGalleryPair(){
@@ -191,17 +191,36 @@ function setupGalleryPair(){
  const onResize=()=>{if(canTrigger)refresh();else queue();};window.addEventListener('resize',onResize,{passive:true});apply();
  galleryPairCleanup=()=>{tween?.scrollTrigger?.kill();tween?.kill();cancelAnimationFrame(frame);window.removeEventListener('scroll',queue);window.removeEventListener('resize',onResize);pair.forEach(c=>{c.style.removeProperty('--pair-x');delete c.dataset.pairProgress;});};
 }
-function setupGalleryMotion(){if(!nativeMotion)return;setupGalleryPair();animatedGalleryCards().forEach(card=>{
- const frame=$('.image-frame',card), img=$('img',frame), title=$('.gallery-title-mask>span',card), meta=$('.gallery-meta-mask>span',card), arrow=$('.gallery-copy>span',card);
- const r={animations:[],visible:false};galleryMotion.push(r);
- const reset=()=>{r.timeline?.kill();r.animations.forEach(a=>a.cancel());r.animations=[];r.visible=false;card.dataset.galleryMotion='ready';if(gs)gs.set([card,frame,title,meta,arrow],{clearProps:'transform,opacity,clipPath'});};
- const reveal=(direction=1)=>{if(r.visible)return;r.visible=true;card.dataset.galleryMotion='playing';const isRightCard=card.dataset.galleryIndex==='1';const delay=isRightCard ? .08 : 0;const clip=isRightCard?'inset(0% 100% 0% 0%)':'inset(0% 0% 0% 100%)';
-  if(motion){r.timeline=gs.timeline({defaults:{ease:'power3.out'},delay}).fromTo(card,{opacity:.35},{opacity:1,y:0,duration:1.08,clearProps:'opacity,transform'},0).fromTo(frame,{clipPath:clip},{clipPath:'inset(0% 0% 0% 0%)',duration:1.25,clearProps:'clipPath'},0).fromTo([title,meta],{yPercent:direction*115,opacity:0},{yPercent:0,opacity:1,duration:.76,stagger:.12,clearProps:'transform,opacity'},.28).fromTo(arrow,{scale:.65,opacity:0},{scale:1,opacity:1,duration:.65,clearProps:'transform,opacity'},.47);}
-  else {const anim=(el,frames,duration,offset=0)=>r.animations.push(el.animate(frames,{duration,delay:delay*1000+offset,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'}));anim(card,[{opacity:.35,transform:'translateY(0)'},{opacity:1,transform:'translateY(0)'}],1080);anim(frame,[{clipPath:clip},{clipPath:'inset(0% 0% 0% 0%)'}],1250);[title,meta].forEach((el,j)=>anim(el,[{transform:`translateY(${direction*115}%)`,opacity:0},{transform:'translateY(0)',opacity:1}],760,280+j*120));anim(arrow,[{transform:'scale(.65)',opacity:0},{transform:'scale(1)',opacity:1}],650,470);}
- };
- if(canTrigger){const top=()=>galleryGrid.getBoundingClientRect().top+scrollY+card.offsetTop;const start=()=>top()-innerHeight;const end=()=>top()+card.offsetHeight;r.trigger=st.create({trigger:galleryGrid,start,end,onEnter:()=>reveal(1),onEnterBack:()=>reveal(-1),onLeave:reset,onLeaveBack:reset});r.parallax=gs.fromTo(img,{yPercent:-8},{yPercent:8,ease:'none',scrollTrigger:{trigger:galleryGrid,start,end,scrub:true,invalidateOnRefresh:true}});}
- else {let direction=1;r.observer=new IntersectionObserver(([e])=>{if(e.isIntersecting)reveal(direction);else if(e.boundingClientRect.bottom<=0||e.boundingClientRect.top>=innerHeight){direction=e.boundingClientRect.bottom<=0?-1:1;reset();}},{threshold:0});r.observer.observe(card);let queued=false;r.tick=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;if(!card.isConnected)return;const b=card.getBoundingClientRect();const progress=Math.min(1,Math.max(0,(innerHeight-b.top)/(innerHeight+b.height)));img.style.transform=`translateY(${(progress-.5)*16}%)`;});};window.addEventListener('scroll',r.tick,{passive:true});r.tick();}
- });}
+function setupGalleryMotion(){
+ if(!nativeMotion)return;
+ setupGalleryPair();
+ animatedGalleryCards().forEach(card=>{
+   const img=$('img',card);
+   const record={};
+   galleryMotion.push(record);
+   if(canTrigger){
+     const top=()=>galleryGrid.getBoundingClientRect().top+scrollY+card.offsetTop;
+     record.parallax=gs.fromTo(img,{yPercent:-8},{yPercent:8,ease:'none',scrollTrigger:{
+       trigger:galleryGrid,start:()=>top()-innerHeight,end:()=>top()+card.offsetHeight,scrub:true,invalidateOnRefresh:true
+     }});
+   }else{
+     let queued=false;
+     record.tick=()=>{
+       if(queued)return;
+       queued=true;
+       requestAnimationFrame(()=>{
+         queued=false;
+         if(!card.isConnected)return;
+         const bounds=card.getBoundingClientRect();
+         const progress=Math.min(1,Math.max(0,(innerHeight-bounds.top)/(innerHeight+bounds.height)));
+         img.style.transform=`translateY(${(progress-.5)*16}%)`;
+       });
+     };
+     window.addEventListener('scroll',record.tick,{passive:true});
+     record.tick();
+   }
+ });
+}
 function initMotion(){registerReveals();setupGalleryMotion();if(motion){gs.timeline({defaults:{ease:'power4.out'}}).fromTo('.hero-layer.active img',{scale:1.13},{scale:1.035,duration:1.8},0).fromTo('.hero-kicker',{opacity:0,y:16},{opacity:1,y:0,duration:.75,clearProps:'opacity,transform'},.1).fromTo('.hero-word',{clipPath:'inset(0 0 100% 0)',y:35},{clipPath:'inset(0 0 0% 0)',y:0,duration:1.05,stagger:.1,clearProps:'transform,clipPath'},.15).fromTo('.hero-detail,.hero-bottom',{opacity:0,y:17},{opacity:1,y:0,duration:.8,stagger:.12,clearProps:'transform,opacity'},.55);}
  else if(nativeMotion){$$('.hero-word').forEach((el,i)=>el.animate([{clipPath:'inset(0 0 100% 0)',transform:'translateY(35px)'},{clipPath:'inset(0 0 0% 0)',transform:'translateY(0)'}],{duration:1100,delay:150+i*100,fill:'backwards',easing:ease}));}
  if(canTrigger){gs.fromTo('.factory-media img',{yPercent:-5},{yPercent:5,ease:'none',scrollTrigger:{trigger:'.factory-feature',start:'top bottom',end:'bottom top',scrub:1.1}});gs.to('.hero-media',{yPercent:12,ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:1.2}});refresh();}
