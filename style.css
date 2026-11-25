@@ -106,10 +106,10 @@
 @media(prefers-reduced-motion:reduce){.gallery-card .image-frame img,.gallery-card:hover .image-frame img{scale:1;transition:none}.play-disc,.play-disc:after{transition:none}}
 
 /* V4 / architectural rhythm, synchronised gallery, adaptive navigation. */
+.gallery-card[data-pair-progress]{translate:var(--pair-x,0px) 0;will-change:translate}
 @media(min-width:761px){
  .product-card:nth-child(n+4) .image-frame{aspect-ratio:1.52}
  .gallery-grid{position:relative;overflow:visible}
- .gallery-card[data-pair-progress]{translate:var(--pair-x,0px) var(--pair-y,0px);will-change:translate}
  .inspiration{overflow:clip}
 }
 .header.scrolled.over-factory:not(.open):not(.mobile-open){color:#fff;background:rgba(21,22,20,.20);backdrop-filter:blur(11px) saturate(110%);-webkit-backdrop-filter:blur(11px) saturate(110%);box-shadow:0 1px 0 #ffffff20}
@@ -152,12 +152,11 @@
 .footer-bottom{font-size:11px;color:#bfc0bb;gap:16px}
 .footer-back{display:flex;align-items:center;gap:12px}.footer-back span{border:1px solid #ffffff40;border-radius:50%;width:30px;height:30px;display:grid;place-items:center;font-size:15px}
 @media(max-width:1000px){.footer-top{grid-template-columns:repeat(2,minmax(0,1fr))}.newsletter{gap:30px}.newsletter-media{aspect-ratio:.85}}
-@media(max-width:760px){.newsletter{grid-template-columns:1fr;gap:32px}.newsletter-media{aspect-ratio:1.48;border-radius:0 48px 0 0}.newsletter-photo-label{left:15px;right:15px;bottom:15px;font-size:8px}.newsletter h2{font-size:clamp(44px,11vw,70px);margin:18px 0 22px}.footer-masthead{align-items:flex-start;flex-direction:column}.footer-cta-arrow{width:48px;height:48px;font-size:21px}.footer-top{gap:30px 16px}.footer-identity,.footer-column:last-child{grid-column:1/-1}.footer-bottom{font-size:10px}.gallery-card:nth-child(-n+2){translate:none}}
+@media(max-width:760px){.newsletter{grid-template-columns:1fr;gap:32px}.newsletter-media{aspect-ratio:1.48;border-radius:0 48px 0 0}.newsletter-photo-label{left:15px;right:15px;bottom:15px;font-size:8px}.newsletter h2{font-size:clamp(44px,11vw,70px);margin:18px 0 22px}.footer-masthead{align-items:flex-start;flex-direction:column}.footer-cta-arrow{width:48px;height:48px;font-size:21px}.footer-top{gap:30px 16px}.footer-identity,.footer-column:last-child{grid-column:1/-1}.footer-bottom{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.gallery-card:nth-child(-n+2){translate:none}.newsletter-media img,.footer-cta-arrow{transition:none}}
 
-/* V5 — alternating gallery motion, service editorial cards, centered brand footer. */
+/* V5 — gallery layout, service editorial cards, centered brand footer. */
 .gallery-grid{position:relative}
-@media(min-width:761px){.gallery-grid:has(.gallery-card:nth-child(5)) .gallery-card:nth-child(n+3){margin-top:36px}.gallery-grid:has(.gallery-card:nth-child(5)) .gallery-card:nth-child(4){margin-top:0;margin-bottom:36px}}
 .complimentary{background:#f1f0ec;overflow:clip}
 .complimentary-heading{display:grid;grid-template-columns:1.4fr .6fr;gap:clamp(20px,6vw,100px);align-items:end;margin:35px 0 clamp(32px,5vw,70px)}
 .complimentary-heading h2{font-size:clamp(48px,7vw,108px);line-height:.99;letter-spacing:-.064em;font-weight:400}
@@ -201,8 +200,6 @@
 .mega-card:hover>span i,.mega-card:focus-visible>span i{transform:translate(4px,-4px)}
 .menu-veil{background:rgba(15,16,15,.28)}
 @media(min-width:761px){.header.scrolled.over-hero:not(.open):not(.mobile-open){background:rgba(21,22,20,.23);color:#fff;backdrop-filter:blur(12px) saturate(110%);-webkit-backdrop-filter:blur(12px) saturate(110%)}.header.scrolled.over-hero:not(.open) .brand-logo{filter:brightness(0) invert(1)}}
-/* Persistent scrub and reversible reveal use different transform channels. */
-@media(min-width:761px){.gallery-grid:has(.gallery-card:nth-child(5)) .gallery-card:nth-child(n+3){margin-top:28px;margin-bottom:0}.gallery-grid:has(.gallery-card:nth-child(5)) .gallery-card:nth-child(4){margin-top:0;margin-bottom:28px}.gallery-grid:has(.gallery-card:nth-child(5)) .gallery-card:nth-child(5){margin-top:36px;margin-bottom:0}}
 /* Both service photos, titles, copy and CTA baseline stay aligned. */
 .complimentary-grid{align-items:stretch}
 .complimentary-card,.complimentary-card:nth-child(2){margin:0;display:flex;flex-direction:column;min-width:0}
@@ -245,3 +242,16 @@
 @media(max-width:1000px){.footer-top{grid-template-columns:repeat(2,minmax(0,1fr));gap:34px}}
 @media(max-width:760px){.header.open.mobile-open,.header.mobile-open{background:rgba(27,28,26,.91);color:white;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}.header.mobile-open .nav{background:rgba(27,28,26,.96)}.complimentary-grid{gap:30px}.complimentary-copy h3{min-height:0}.material-board{gap:3px;padding:3px}.material-board-main,.material-board-bottom{gap:3px}.footer-top{gap:30px 18px}.footer-identity{grid-column:1/-1}.footer .footer-identity .brand-logo{width:144px;height:55px}.footer-column:last-child{grid-column:1/-1}}
 @media(prefers-reduced-motion:reduce){.footer-column a,.footer-column a::after,.footer-identity .brand-logo,.footer-back span,.material-board img{transition:none}.footer-column a:hover,.footer-column a:focus-visible{translate:none}}
+
+@media (max-width: 760px) {
+  .gallery-grid:has(.gallery-card:nth-child(5)) .gallery-card:first-child {
+    grid-column: span 1;
+    aspect-ratio: .85;
+    min-height: 190px;
+  }
+
+  .gallery-grid:has(.gallery-card:nth-child(5)) .gallery-card:nth-child(n+3) {
+    grid-column: 1 / -1;
+    aspect-ratio: 1.4;
+  }
+}

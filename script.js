@@ -166,7 +166,7 @@ function registerReveals(root=document){for(const [el,rec] of revealRecords){if(
 const galleryMotion=[];
 const animatedGalleryCards=()=>$$('.gallery-card[data-gallery-index="0"],.gallery-card[data-gallery-index="1"]',galleryGrid);
 function destroyGalleryMotion(){destroyGalleryPair();galleryMotion.splice(0).forEach(r=>{r.trigger?.kill();r.parallax?.scrollTrigger?.kill();r.parallax?.kill();r.observer?.disconnect();r.timeline?.kill();r.animations?.forEach(a=>a.cancel());if(r.tick)window.removeEventListener('scroll',r.tick);});}
-// Shared linear scroll timeline: opposing horizontal motion on the first row.
+// Shared scroll progress moves the first-row cards in opposite directions.
 // CSS translate is separate from GSAP transform/clipPath used by entrance and hover.
 let galleryPairCleanup=null;
 function destroyGalleryPair(){galleryPairCleanup?.();galleryPairCleanup=null;}
@@ -178,26 +178,26 @@ function setupGalleryPair(){
  let tween=null,frame=0;
  const state={progress:0};
  const apply=()=>{
-   const sameRow=desktop.matches && Math.abs(pair[0].offsetTop-pair[1].offsetTop)<4;
-   const travel=sameRow?Math.min(65,window.innerWidth*.042):0;
+   const travel=desktop.matches?Math.min(84,innerWidth*.06):Math.min(22,innerWidth*.05);
    const p=Math.max(0,Math.min(1,state.progress));
-   pair.forEach((card,i)=>{card.style.setProperty('--pair-x',`${(i?1:-1)*travel*(1-p)}px`);card.style.setProperty('--pair-y',`${sameRow?(i?-1:1)*24*(1-p):0}px`);card.dataset.pairProgress=p.toFixed(3);});
+   pair.forEach((card,i)=>{card.style.setProperty('--pair-x',`${(i?-1:1)*travel*(1-p)}px`);card.dataset.pairProgress=p.toFixed(3);});
  };
- const distance=()=>Math.max(1,innerHeight*.78);
- const nativeTick=()=>{frame=0;state.progress=(innerHeight-galleryGrid.getBoundingClientRect().top)/distance();apply();};
+ const start=()=>galleryGrid.getBoundingClientRect().top+scrollY-innerHeight*.92;
+ const distance=()=>Math.max(1,innerHeight*.57);
+ const nativeTick=()=>{frame=0;state.progress=(scrollY-start())/distance();apply();};
  const queue=()=>{if(!frame)frame=requestAnimationFrame(nativeTick);};
- if(canTrigger){tween=gs.fromTo(state,{progress:0},{progress:1,ease:'none',onUpdate:apply,scrollTrigger:{trigger:galleryGrid,start:'top bottom',end:()=>'+='+distance(),scrub:true,invalidateOnRefresh:true,onRefresh:apply}});}
+ if(canTrigger){tween=gs.fromTo(state,{progress:0},{progress:1,ease:'none',onUpdate:apply,scrollTrigger:{trigger:galleryGrid,start,end:()=>start()+distance(),scrub:.5,invalidateOnRefresh:true,onRefresh:apply}});}
  else{window.addEventListener('scroll',queue,{passive:true});nativeTick();}
  const onResize=()=>{if(canTrigger)refresh();else queue();};window.addEventListener('resize',onResize,{passive:true});apply();
- galleryPairCleanup=()=>{tween?.scrollTrigger?.kill();tween?.kill();cancelAnimationFrame(frame);window.removeEventListener('scroll',queue);window.removeEventListener('resize',onResize);pair.forEach(c=>{c.style.removeProperty('--pair-x');c.style.removeProperty('--pair-y');delete c.dataset.pairProgress;});};
+ galleryPairCleanup=()=>{tween?.scrollTrigger?.kill();tween?.kill();cancelAnimationFrame(frame);window.removeEventListener('scroll',queue);window.removeEventListener('resize',onResize);pair.forEach(c=>{c.style.removeProperty('--pair-x');delete c.dataset.pairProgress;});};
 }
-function setupGalleryMotion(){if(!nativeMotion)return;setupGalleryPair();animatedGalleryCards().forEach((card,i)=>{
+function setupGalleryMotion(){if(!nativeMotion)return;setupGalleryPair();animatedGalleryCards().forEach(card=>{
  const frame=$('.image-frame',card), img=$('img',frame), title=$('.gallery-title-mask>span',card), meta=$('.gallery-meta-mask>span',card), arrow=$('.gallery-copy>span',card);
  const r={animations:[],visible:false};galleryMotion.push(r);
  const reset=()=>{r.timeline?.kill();r.animations.forEach(a=>a.cancel());r.animations=[];r.visible=false;card.dataset.galleryMotion='ready';if(gs)gs.set([card,frame,title,meta,arrow],{clearProps:'transform,opacity,clipPath'});};
- const reveal=(direction=1)=>{if(r.visible)return;r.visible=true;card.dataset.galleryMotion='playing';const delay=(i%2)*.10;const clip=i===0?'inset(0% 100% 0% 0%)':'inset(0% 0% 0% 100%)';
-  if(motion){r.timeline=gs.timeline({defaults:{ease:'power4.out'},delay}).fromTo(card,{opacity:.12},{opacity:1,y:0,duration:1.08,clearProps:'opacity,transform'},0).fromTo(frame,{clipPath:clip},{clipPath:'inset(0% 0% 0% 0%)',duration:1.25,clearProps:'clipPath'},0).fromTo([title,meta],{yPercent:direction*115,opacity:0},{yPercent:0,opacity:1,duration:.76,stagger:.12,clearProps:'transform,opacity'},.28).fromTo(arrow,{scale:.65,opacity:0},{scale:1,opacity:1,duration:.65,clearProps:'transform,opacity'},.47);}
-  else {const anim=(el,frames,duration,offset=0)=>r.animations.push(el.animate(frames,{duration,delay:delay*1000+offset,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'}));anim(card,[{opacity:.12,transform:'translateY(0)'},{opacity:1,transform:'translateY(0)'}],1080);anim(frame,[{clipPath:clip},{clipPath:'inset(0% 0% 0% 0%)'}],1250);[title,meta].forEach((el,j)=>anim(el,[{transform:`translateY(${direction*115}%)`,opacity:0},{transform:'translateY(0)',opacity:1}],760,280+j*120));anim(arrow,[{transform:'scale(.65)',opacity:0},{transform:'scale(1)',opacity:1}],650,470);}
+ const reveal=(direction=1)=>{if(r.visible)return;r.visible=true;card.dataset.galleryMotion='playing';const isRightCard=card.dataset.galleryIndex==='1';const delay=isRightCard ? .08 : 0;const clip=isRightCard?'inset(0% 100% 0% 0%)':'inset(0% 0% 0% 100%)';
+  if(motion){r.timeline=gs.timeline({defaults:{ease:'power3.out'},delay}).fromTo(card,{opacity:.35},{opacity:1,y:0,duration:1.08,clearProps:'opacity,transform'},0).fromTo(frame,{clipPath:clip},{clipPath:'inset(0% 0% 0% 0%)',duration:1.25,clearProps:'clipPath'},0).fromTo([title,meta],{yPercent:direction*115,opacity:0},{yPercent:0,opacity:1,duration:.76,stagger:.12,clearProps:'transform,opacity'},.28).fromTo(arrow,{scale:.65,opacity:0},{scale:1,opacity:1,duration:.65,clearProps:'transform,opacity'},.47);}
+  else {const anim=(el,frames,duration,offset=0)=>r.animations.push(el.animate(frames,{duration,delay:delay*1000+offset,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'}));anim(card,[{opacity:.35,transform:'translateY(0)'},{opacity:1,transform:'translateY(0)'}],1080);anim(frame,[{clipPath:clip},{clipPath:'inset(0% 0% 0% 0%)'}],1250);[title,meta].forEach((el,j)=>anim(el,[{transform:`translateY(${direction*115}%)`,opacity:0},{transform:'translateY(0)',opacity:1}],760,280+j*120));anim(arrow,[{transform:'scale(.65)',opacity:0},{transform:'scale(1)',opacity:1}],650,470);}
  };
  if(canTrigger){const top=()=>galleryGrid.getBoundingClientRect().top+scrollY+card.offsetTop;const start=()=>top()-innerHeight;const end=()=>top()+card.offsetHeight;r.trigger=st.create({trigger:galleryGrid,start,end,onEnter:()=>reveal(1),onEnterBack:()=>reveal(-1),onLeave:reset,onLeaveBack:reset});r.parallax=gs.fromTo(img,{yPercent:-8},{yPercent:8,ease:'none',scrollTrigger:{trigger:galleryGrid,start,end,scrub:true,invalidateOnRefresh:true}});}
  else {let direction=1;r.observer=new IntersectionObserver(([e])=>{if(e.isIntersecting)reveal(direction);else if(e.boundingClientRect.bottom<=0||e.boundingClientRect.top>=innerHeight){direction=e.boundingClientRect.bottom<=0?-1:1;reset();}},{threshold:0});r.observer.observe(card);let queued=false;r.tick=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;if(!card.isConnected)return;const b=card.getBoundingClientRect();const progress=Math.min(1,Math.max(0,(innerHeight-b.top)/(innerHeight+b.height)));img.style.transform=`translateY(${(progress-.5)*16}%)`;});};window.addEventListener('scroll',r.tick,{passive:true});r.tick();}
