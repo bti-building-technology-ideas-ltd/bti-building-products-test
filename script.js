@@ -69,16 +69,34 @@ let refreshFrame; function refresh(){if(canTrigger){cancelAnimationFrame(refresh
 const header=$('#header'), veil=$('.menu-veil'), mobile=$('.mobile-toggle');
 const menuButtons=$$('.menu-toggle'), menus=$$('.mega');let openMenu='', menuTimer=0, menuTween=null;
 $('#mega-products').innerHTML=products.map(p=>`<a class="mega-card" href="${site+p.slug}">${picture(p.image,p.name)}<span>${p.name}<i>↗</i></span></a>`).join('');
+const navShell=$('.nav-shell',header), navHero=$('.hero'), navFactory=$('#factory .factory-feature');
+let navFrame=0;
+
 function updateScroll(){
- const y=window.scrollY, factory=$('#factory .factory-feature').getBoundingClientRect(), hero=$('.hero').getBoundingClientRect();
- const navHeight=header.querySelector('.nav-shell').offsetHeight;
- header.classList.toggle('scrolled',y>65);
- header.classList.toggle('over-hero',hero.top<=0 && hero.bottom>=navHeight);
- header.classList.toggle('over-factory',y>65 && factory.top<=navHeight*.5 && factory.bottom>navHeight*.75);
+ navFrame=0;
+ const navBounds=navShell.getBoundingClientRect();
+ const heroBounds=navHero.getBoundingClientRect();
+ const factoryBounds=navFactory.getBoundingClientRect();
+ const navMidpoint=navBounds.top+navBounds.height/2;
+ const overHero=heroBounds.top<=navBounds.top+1 && heroBounds.bottom>=navBounds.bottom;
+ const overFactory=factoryBounds.top<=navMidpoint && factoryBounds.bottom>navBounds.bottom;
+ header.classList.toggle('scrolled',window.scrollY>65);
+ header.classList.toggle('over-hero',overHero);
+ header.classList.toggle('over-factory',overFactory);
 }
-window.addEventListener('resize',updateScroll,{passive:true});
-updateScroll(); window.addEventListener('scroll',updateScroll,{passive:true});
-window.addEventListener('pageshow',updateScroll);
+
+function syncNavigation(){
+ if(!navFrame)navFrame=requestAnimationFrame(updateScroll);
+}
+
+updateScroll();
+window.addEventListener('scroll',syncNavigation,{passive:true});
+window.addEventListener('resize',syncNavigation,{passive:true});
+window.addEventListener('pageshow',syncNavigation);
+window.addEventListener('load',syncNavigation);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncNavigation();});
+const navLayoutObserver=new ResizeObserver(syncNavigation);
+[navShell,navHero,navFactory].forEach(element=>navLayoutObserver.observe(element));
 function setMenu(id){clearTimeout(menuTimer);if(openMenu===id)return; if(menuTween)menuTween.kill();openMenu=id;header.classList.toggle('open',!!id);veil.hidden=!id;menuButtons.forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.menu===id)));menus.forEach(m=>{m.hidden=m.id!==id;if(gs)gs.set(m,{clearProps:'opacity,transform,clipPath'});});
   if(id&&motion){const panel=document.getElementById(id);menuTween=gs.timeline().fromTo(panel,{clipPath:'inset(0 0 100% 0)'},{clipPath:'inset(0 0 0% 0)',duration:.55,ease:'power4.inOut'}).fromTo($$('.mega-card',panel),{y:20,opacity:0},{y:0,opacity:1,duration:.55,stagger:.055,ease:'power3.out'},.16);}
   if(lenis){if(id||header.classList.contains('mobile-open'))lenis.stop();else if(!document.querySelector('dialog[open]'))lenis.start();}
@@ -288,8 +306,8 @@ function setupGalleryMotion(){
 }
 function initMotion(){registerReveals();setupGalleryMotion();if(motion){gs.timeline({defaults:{ease:'power4.out'}}).fromTo('.hero-layer.active img',{scale:1.13},{scale:1.035,duration:1.8},0).fromTo('.hero-kicker',{opacity:0,y:16},{opacity:1,y:0,duration:.75,clearProps:'opacity,transform'},.1).fromTo('.hero-word',{clipPath:'inset(0 0 100% 0)',y:35},{clipPath:'inset(0 0 0% 0)',y:0,duration:1.05,stagger:.1,clearProps:'transform,clipPath'},.15).fromTo('.hero-detail,.hero-bottom',{opacity:0,y:17},{opacity:1,y:0,duration:.8,stagger:.12,clearProps:'transform,opacity'},.55);}
  else if(nativeMotion){$$('.hero-word').forEach((el,i)=>el.animate([{clipPath:'inset(0 0 100% 0)',transform:'translateY(35px)'},{clipPath:'inset(0 0 0% 0)',transform:'translateY(0)'}],{duration:1100,delay:150+i*100,fill:'backwards',easing:ease}));}
- if(canTrigger){gs.fromTo('.factory-media img',{yPercent:-5},{yPercent:5,ease:'none',scrollTrigger:{trigger:'.factory-feature',start:'top bottom',end:'bottom top',scrub:1.1}});gs.to('.hero-media',{yPercent:12,ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:1.2}});refresh();}
- else if(nativeMotion){let pending=false;const factory=$('.factory-feature'),img=$('.factory-media img');const tick=()=>{pending=false;const r=factory.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight){const progress=Math.max(0,Math.min(1,(innerHeight-r.top)/(innerHeight+r.height)));img.style.transform=`translateY(${(progress-.5)*10}%)`;}if(scrollY<$('.hero').offsetHeight)media.style.transform=`translateY(${scrollY*.10}px)`;};window.addEventListener('scroll',()=>{if(!pending){pending=true;requestAnimationFrame(tick);}},{passive:true});tick();}
+ if(canTrigger){gs.fromTo('.factory-media img',{yPercent:-5},{yPercent:5,ease:'none',scrollTrigger:{trigger:'.factory-feature',start:'top bottom',end:'bottom top',scrub:1.1}});refresh();}
+ else if(nativeMotion){let pending=false;const factory=$('.factory-feature'),img=$('.factory-media img');const tick=()=>{pending=false;const r=factory.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight){const progress=Math.max(0,Math.min(1,(innerHeight-r.top)/(innerHeight+r.height)));img.style.transform=`translateY(${(progress-.5)*10}%)`;}};window.addEventListener('scroll',()=>{if(!pending){pending=true;requestAnimationFrame(tick);}},{passive:true});tick();}
  document.documentElement.dataset.motion=canTrigger?'gsap':motion?'gsap-partial':nativeMotion?'native-fallback':'reduced';console.info('[bti motion]',document.documentElement.dataset.motion, 'ScrollTrigger:',canTrigger,'Lenis:',!!lenis);scheduleHero();}
 initMotion();window.addEventListener('load',refresh,{once:true});if(document.fonts?.ready)document.fonts.ready.then(refresh);
 })();
