@@ -164,14 +164,15 @@ const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{const rec=
 function registerReveals(root=document){for(const [el,rec] of revealRecords){if(!el.isConnected){observer.unobserve(el);cancelReveal(rec);revealRecords.delete(el);}}if(!nativeMotion)return;$$(revealSelector,root).forEach(el=>{if(revealRecords.has(el))return;const rec={el,parts:getParts(el),animations:[],visible:false,direction:1};revealRecords.set(el,rec);observer.observe(el);});}
 // Gallery: dedicated reversible cinematic entrance + independent scroll-scrub parallax.
 const galleryMotion=[];
-function destroyGalleryMotion(){destroyGalleryPair();destroyGalleryZigzag();galleryMotion.splice(0).forEach(r=>{r.trigger?.kill();r.parallax?.scrollTrigger?.kill();r.parallax?.kill();r.observer?.disconnect();r.timeline?.kill();r.animations?.forEach(a=>a.cancel());if(r.tick)window.removeEventListener('scroll',r.tick);});}
+const animatedGalleryCards=()=>$$('.gallery-card[data-gallery-index="0"],.gallery-card[data-gallery-index="1"]',galleryGrid);
+function destroyGalleryMotion(){destroyGalleryPair();galleryMotion.splice(0).forEach(r=>{r.trigger?.kill();r.parallax?.scrollTrigger?.kill();r.parallax?.kill();r.observer?.disconnect();r.timeline?.kill();r.animations?.forEach(a=>a.cancel());if(r.tick)window.removeEventListener('scroll',r.tick);});}
 // Shared linear scroll timeline: opposing horizontal motion on the first row.
 // CSS translate is separate from GSAP transform/clipPath used by entrance and hover.
 let galleryPairCleanup=null;
 function destroyGalleryPair(){galleryPairCleanup?.();galleryPairCleanup=null;}
 function setupGalleryPair(){
  destroyGalleryPair();
- const pair=$$('.gallery-card',galleryGrid).slice(0,2);
+ const pair=animatedGalleryCards();
  if(!nativeMotion || pair.length!==2)return;
  const desktop=window.matchMedia('(min-width:761px)');
  let tween=null,frame=0;
@@ -180,7 +181,7 @@ function setupGalleryPair(){
    const sameRow=desktop.matches && Math.abs(pair[0].offsetTop-pair[1].offsetTop)<4;
    const travel=sameRow?Math.min(65,window.innerWidth*.042):0;
    const p=Math.max(0,Math.min(1,state.progress));
-   pair.forEach((card,i)=>{if(card.matches('.exposed-masonry'))return;card.style.setProperty('--pair-x',`${(i?1:-1)*travel*(1-p)}px`);card.style.setProperty('--pair-y',`${sameRow?(i?-1:1)*24*(1-p):0}px`);card.dataset.pairProgress=p.toFixed(3);});
+   pair.forEach((card,i)=>{card.style.setProperty('--pair-x',`${(i?1:-1)*travel*(1-p)}px`);card.style.setProperty('--pair-y',`${sameRow?(i?-1:1)*24*(1-p):0}px`);card.dataset.pairProgress=p.toFixed(3);});
  };
  const distance=()=>Math.max(1,innerHeight*.78);
  const nativeTick=()=>{frame=0;state.progress=(innerHeight-galleryGrid.getBoundingClientRect().top)/distance();apply();};
@@ -190,56 +191,16 @@ function setupGalleryPair(){
  const onResize=()=>{if(canTrigger)refresh();else queue();};window.addEventListener('resize',onResize,{passive:true});apply();
  galleryPairCleanup=()=>{tween?.scrollTrigger?.kill();tween?.kill();cancelAnimationFrame(frame);window.removeEventListener('scroll',queue);window.removeEventListener('resize',onResize);pair.forEach(c=>{c.style.removeProperty('--pair-x');c.style.removeProperty('--pair-y');delete c.dataset.pairProgress;});};
 }
-// V5: second-row zigzag scroll choreography. The grid is a stable trigger;
-// CSS translate is independent of image parallax and repeatable reveal transforms.
-let zigzagCleanup=null;
-function destroyGalleryZigzag(){zigzagCleanup?.();zigzagCleanup=null;}
-function setupGalleryZigzag(){
- destroyGalleryZigzag();
- const all=$$('.gallery-card',galleryGrid);
- const cards=all.filter((c,i)=>i>=2||c.matches('.exposed-masonry'));
- if(!nativeMotion||!cards.length)return;
- const desktop=matchMedia('(min-width:761px)');
- const records=[];let frame=0;
- const clamp=p=>Math.max(0,Math.min(1,p));
- // Absolute layout coordinates intentionally exclude animated translate transforms.
- const topOf=c=>galleryGrid.getBoundingClientRect().top+scrollY+c.offsetTop;
- const startOf=c=>topOf(c)-innerHeight*.99;
- const endOf=c=>topOf(c)-innerHeight*.30;
- const apply=(c,state)=>{
-   const p=clamp(state.progress), remain=1-p, exposed=c.matches('.exposed-masonry');
-   const i=all.indexOf(c)-2;
-   const height=desktop.matches?Math.min(112,innerHeight*.14):48;
-   // Exposed masonry ALWAYS rises from below, including in filtered results.
-   const y=exposed?height*1.25:((i===2)?-height*.75:height*.85);
-   const x=(!exposed&&desktop.matches)?(i===0?-20:20):0;
-   c.style.setProperty('--zig-x',`${x*remain}px`);
-   c.style.setProperty('--zig-y',`${y*remain}px`);
-   c.dataset.zigzagProgress=p.toFixed(3);
- };
- cards.forEach(c=>{
-   const state={progress:clamp((scrollY-startOf(c))/Math.max(1,endOf(c)-startOf(c)))};
-   const rec={c,state,tween:null}; records.push(rec);apply(c,state);
-   if(canTrigger){rec.tween=gs.fromTo(state,{progress:0},{progress:1,ease:'none',onUpdate:()=>apply(c,state),scrollTrigger:{trigger:galleryGrid,start:()=>startOf(c),end:()=>endOf(c),scrub:true,invalidateOnRefresh:true}});}
- });
- const tick=()=>{frame=0;records.forEach(({c,state})=>{state.progress=clamp((scrollY-startOf(c))/Math.max(1,endOf(c)-startOf(c)));apply(c,state);});};
- const queue=()=>{if(!frame)frame=requestAnimationFrame(tick);};
- if(!canTrigger)window.addEventListener('scroll',queue,{passive:true});
- const onResize=()=>{if(canTrigger)refresh();else queue();};window.addEventListener('resize',onResize,{passive:true});
- zigzagCleanup=()=>{records.forEach(({c,tween})=>{tween?.scrollTrigger?.kill();tween?.kill();c.style.removeProperty('--zig-x');c.style.removeProperty('--zig-y');delete c.dataset.zigzagProgress;});cancelAnimationFrame(frame);window.removeEventListener('scroll',queue);window.removeEventListener('resize',onResize);};
-}
-function setupGalleryMotion(){if(!nativeMotion)return;setupGalleryPair();setupGalleryZigzag();$$('.gallery-card',galleryGrid).forEach((card,i)=>{
- // Use the original gallery position so filtering never restores a removed entrance.
- const hasEntrance=Number(card.dataset.galleryIndex)<2;
+function setupGalleryMotion(){if(!nativeMotion)return;setupGalleryPair();animatedGalleryCards().forEach((card,i)=>{
  const frame=$('.image-frame',card), img=$('img',frame), title=$('.gallery-title-mask>span',card), meta=$('.gallery-meta-mask>span',card), arrow=$('.gallery-copy>span',card);
  const r={animations:[],visible:false};galleryMotion.push(r);
  const reset=()=>{r.timeline?.kill();r.animations.forEach(a=>a.cancel());r.animations=[];r.visible=false;card.dataset.galleryMotion='ready';if(gs)gs.set([card,frame,title,meta,arrow],{clearProps:'transform,opacity,clipPath'});};
- const reveal=(direction=1)=>{if(r.visible)return;r.visible=true;card.dataset.galleryMotion='playing';const exposed=card.matches('.exposed-masonry');const delay=(i%2)*.10;const clip=exposed?'inset(100% 0% 0% 0%)':i<2?(i===0?'inset(0% 100% 0% 0%)':'inset(0% 0% 0% 100%)'):(direction===1?'inset(0% 0% 100% 0%)':'inset(100% 0% 0% 0%)');
-  if(motion){r.timeline=gs.timeline({defaults:{ease:'power4.out'},delay}).fromTo(card,{opacity:.12,y:exposed?32:0},{opacity:1,y:0,duration:1.08,clearProps:'opacity,transform'},0).fromTo(frame,{clipPath:clip},{clipPath:'inset(0% 0% 0% 0%)',duration:1.25,clearProps:'clipPath'},0).fromTo([title,meta],{yPercent:(exposed?1:direction)*115,opacity:0},{yPercent:0,opacity:1,duration:.76,stagger:.12,clearProps:'transform,opacity'},.28).fromTo(arrow,{scale:.65,opacity:0},{scale:1,opacity:1,duration:.65,clearProps:'transform,opacity'},.47);}
-  else {const anim=(el,frames,duration,offset=0)=>r.animations.push(el.animate(frames,{duration,delay:delay*1000+offset,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'}));anim(card,[{opacity:.12,transform:`translateY(${exposed?32:0}px)`},{opacity:1,transform:'translateY(0)'}],1080);anim(frame,[{clipPath:clip},{clipPath:'inset(0% 0% 0% 0%)'}],1250);[title,meta].forEach((el,j)=>anim(el,[{transform:`translateY(${(exposed?1:direction)*115}%)`,opacity:0},{transform:'translateY(0)',opacity:1}],760,280+j*120));anim(arrow,[{transform:'scale(.65)',opacity:0},{transform:'scale(1)',opacity:1}],650,470);}
+ const reveal=(direction=1)=>{if(r.visible)return;r.visible=true;card.dataset.galleryMotion='playing';const delay=(i%2)*.10;const clip=i===0?'inset(0% 100% 0% 0%)':'inset(0% 0% 0% 100%)';
+  if(motion){r.timeline=gs.timeline({defaults:{ease:'power4.out'},delay}).fromTo(card,{opacity:.12},{opacity:1,y:0,duration:1.08,clearProps:'opacity,transform'},0).fromTo(frame,{clipPath:clip},{clipPath:'inset(0% 0% 0% 0%)',duration:1.25,clearProps:'clipPath'},0).fromTo([title,meta],{yPercent:direction*115,opacity:0},{yPercent:0,opacity:1,duration:.76,stagger:.12,clearProps:'transform,opacity'},.28).fromTo(arrow,{scale:.65,opacity:0},{scale:1,opacity:1,duration:.65,clearProps:'transform,opacity'},.47);}
+  else {const anim=(el,frames,duration,offset=0)=>r.animations.push(el.animate(frames,{duration,delay:delay*1000+offset,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'}));anim(card,[{opacity:.12,transform:'translateY(0)'},{opacity:1,transform:'translateY(0)'}],1080);anim(frame,[{clipPath:clip},{clipPath:'inset(0% 0% 0% 0%)'}],1250);[title,meta].forEach((el,j)=>anim(el,[{transform:`translateY(${direction*115}%)`,opacity:0},{transform:'translateY(0)',opacity:1}],760,280+j*120));anim(arrow,[{transform:'scale(.65)',opacity:0},{transform:'scale(1)',opacity:1}],650,470);}
  };
- if(canTrigger){const top=()=>galleryGrid.getBoundingClientRect().top+scrollY+card.offsetTop;const start=()=>top()-innerHeight;const end=()=>top()+card.offsetHeight;if(hasEntrance)r.trigger=st.create({trigger:galleryGrid,start,end,onEnter:()=>reveal(1),onEnterBack:()=>reveal(-1),onLeave:reset,onLeaveBack:reset});r.parallax=gs.fromTo(img,{yPercent:-8},{yPercent:8,ease:'none',scrollTrigger:{trigger:galleryGrid,start,end,scrub:true,invalidateOnRefresh:true}});}
- else {if(hasEntrance){let direction=1;r.observer=new IntersectionObserver(([e])=>{if(e.isIntersecting)reveal(direction);else if(e.boundingClientRect.bottom<=0||e.boundingClientRect.top>=innerHeight){direction=e.boundingClientRect.bottom<=0?-1:1;reset();}},{threshold:0});r.observer.observe(card);}let queued=false;r.tick=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;if(!card.isConnected)return;const b=card.getBoundingClientRect();const progress=Math.min(1,Math.max(0,(innerHeight-b.top)/(innerHeight+b.height)));img.style.transform=`translateY(${(progress-.5)*16}%)`;});};window.addEventListener('scroll',r.tick,{passive:true});r.tick();}
+ if(canTrigger){const top=()=>galleryGrid.getBoundingClientRect().top+scrollY+card.offsetTop;const start=()=>top()-innerHeight;const end=()=>top()+card.offsetHeight;r.trigger=st.create({trigger:galleryGrid,start,end,onEnter:()=>reveal(1),onEnterBack:()=>reveal(-1),onLeave:reset,onLeaveBack:reset});r.parallax=gs.fromTo(img,{yPercent:-8},{yPercent:8,ease:'none',scrollTrigger:{trigger:galleryGrid,start,end,scrub:true,invalidateOnRefresh:true}});}
+ else {let direction=1;r.observer=new IntersectionObserver(([e])=>{if(e.isIntersecting)reveal(direction);else if(e.boundingClientRect.bottom<=0||e.boundingClientRect.top>=innerHeight){direction=e.boundingClientRect.bottom<=0?-1:1;reset();}},{threshold:0});r.observer.observe(card);let queued=false;r.tick=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;if(!card.isConnected)return;const b=card.getBoundingClientRect();const progress=Math.min(1,Math.max(0,(innerHeight-b.top)/(innerHeight+b.height)));img.style.transform=`translateY(${(progress-.5)*16}%)`;});};window.addEventListener('scroll',r.tick,{passive:true});r.tick();}
  });}
 function initMotion(){registerReveals();setupGalleryMotion();if(motion){gs.timeline({defaults:{ease:'power4.out'}}).fromTo('.hero-layer.active img',{scale:1.13},{scale:1.035,duration:1.8},0).fromTo('.hero-kicker',{opacity:0,y:16},{opacity:1,y:0,duration:.75,clearProps:'opacity,transform'},.1).fromTo('.hero-word',{clipPath:'inset(0 0 100% 0)',y:35},{clipPath:'inset(0 0 0% 0)',y:0,duration:1.05,stagger:.1,clearProps:'transform,clipPath'},.15).fromTo('.hero-detail,.hero-bottom',{opacity:0,y:17},{opacity:1,y:0,duration:.8,stagger:.12,clearProps:'transform,opacity'},.55);}
  else if(nativeMotion){$$('.hero-word').forEach((el,i)=>el.animate([{clipPath:'inset(0 0 100% 0)',transform:'translateY(35px)'},{clipPath:'inset(0 0 0% 0)',transform:'translateY(0)'}],{duration:1100,delay:150+i*100,fill:'backwards',easing:ease}));}

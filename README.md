@@ -12,7 +12,7 @@ Open [index.html](index.html) with a local web server to review the final design
 ## Materials in real spaces
 
 - Architectural screens and Outdoor surfaces retain their AOS-style entrance reveals and opposing horizontal scroll motion.
-- Landscape possibilities, Exposed masonry and Interior feature walls have no AOS-style entrance, including in filtered views. Images, captions and arrows render without entrance fades or masks. Scroll-linked zigzag, image parallax and hover interactions remain. Exposed masonry still rises from below and reverses when scrolling back up.
+- Landscape possibilities, Exposed masonry and Interior feature walls stay static while scrolling in all filter views. Their images and captions are fully visible without a reveal. Hover and lightbox interactions are available.
 - Verify both scroll directions, filters, lightbox, resizing and reduced motion in WordPress against the reference.
 
 ## Other sections
