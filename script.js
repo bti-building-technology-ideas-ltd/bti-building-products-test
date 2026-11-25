@@ -16,16 +16,16 @@ const images = {
   unipaver: uploads + '2021/03/67-1024x853.jpg',
   tile: uploads + '2021/03/78-1024x853.jpg',
   flick: uploads + '2026/11/btibuildingproducts.com-flick-0c879d8a-9aee-4d61-ae6d-f32093f13ce1-1600x800.webp',
-  landscape: uploads + 'photo-gallery/36.jpg?bwg=1616570780',
+  landscape: './landscape-possibilities.webp',
   wall: uploads + 'photo-gallery/20210316_082817.jpg?bwg=1643714531',
   interior: uploads + 'photo-gallery/20191231_082720.jpg?bwg=1616570078',
 };
 const products = [
-  {name:'Concrete Hollow Block', type:'Masonry', group:'masonry', image:images.hollow, detail:'Machine-made hollow blocks in a range of dimensions, designed for efficient masonry construction.', slug:'/concrete-hollow-block'},
-  {name:'Concrete Solid Brick', type:'Masonry', group:'masonry', image:images.solid, detail:'Solid concrete bricks with uniform dimensions and a consistent finish for modern building work.', slug:'/concrete-solid-brick'},
-  {name:'Unipavers', type:'Outdoor flooring', group:'paving', image:images.unipaver, detail:'Interlocking concrete pavers in multiple colours and thicknesses for driveways, pathways and landscapes.', slug:'/unipavers'},
-  {name:'Pavement Tiles', type:'Surface solutions', group:'paving', image:images.tile, detail:'Explore colour and pattern options for walkways, terraces and outdoor flooring.', slug:'/pavement-tiles'},
-  {name:'Flick', type:'Electrical solutions', group:'electrical', image:images.flick, detail:'Modern switches and sockets with minimal forms, thoughtful detailing and everyday functionality.', slug:'/flick/'},
+  {name:'Concrete Hollow Block', type:'Masonry', group:'masonry', image:'./concrete-hollow-block.webp', detail:'Machine-made hollow blocks in a range of dimensions, designed for efficient masonry construction.', slug:'/concrete-hollow-block'},
+  {name:'Concrete Solid Brick', type:'Masonry', group:'masonry', image:'./02-concrete-solid-brick.webp', detail:'Solid concrete bricks with uniform dimensions and a consistent finish for modern building work.', slug:'/concrete-solid-brick'},
+  {name:'Unipavers', type:'Outdoor flooring', group:'paving', image:'./03-unipavers.webp', detail:'Interlocking concrete pavers in multiple colours and thicknesses for driveways, pathways and landscapes.', slug:'/unipavers'},
+  {name:'Pavement Tiles', type:'Surface solutions', group:'paving', image:'./04-pavement-tiles.webp', detail:'Explore colour and pattern options for walkways, terraces and outdoor flooring.', slug:'/pavement-tiles'},
+  {name:'Flick', type:'Electrical solutions', group:'electrical', image:'./05-flick.webp', detail:'Modern switches and sockets with minimal forms, thoughtful detailing and everyday functionality.', slug:'/flick/'},
 ];
 const slides = [
   {image:'./hero-masonry.webp', alt:'Architectural concrete masonry', title:'Concrete masonry for contemporary construction.', link:'Explore masonry', slug:'/concrete-hollow-block', caption:'MASONRY / DESIGN INSPIRATION'},
@@ -73,11 +73,12 @@ function updateScroll(){
  const y=window.scrollY, factory=$('#factory .factory-feature').getBoundingClientRect(), hero=$('.hero').getBoundingClientRect();
  const navHeight=header.querySelector('.nav-shell').offsetHeight;
  header.classList.toggle('scrolled',y>65);
- header.classList.toggle('over-hero',hero.top<=0 && hero.bottom>navHeight*.8);
+ header.classList.toggle('over-hero',hero.top<=0 && hero.bottom>=navHeight);
  header.classList.toggle('over-factory',y>65 && factory.top<=navHeight*.5 && factory.bottom>navHeight*.75);
 }
 window.addEventListener('resize',updateScroll,{passive:true});
 updateScroll(); window.addEventListener('scroll',updateScroll,{passive:true});
+window.addEventListener('pageshow',updateScroll);
 function setMenu(id){clearTimeout(menuTimer);if(openMenu===id)return; if(menuTween)menuTween.kill();openMenu=id;header.classList.toggle('open',!!id);veil.hidden=!id;menuButtons.forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.menu===id)));menus.forEach(m=>{m.hidden=m.id!==id;if(gs)gs.set(m,{clearProps:'opacity,transform,clipPath'});});
   if(id&&motion){const panel=document.getElementById(id);menuTween=gs.timeline().fromTo(panel,{clipPath:'inset(0 0 100% 0)'},{clipPath:'inset(0 0 0% 0)',duration:.55,ease:'power4.inOut'}).fromTo($$('.mega-card',panel),{y:20,opacity:0},{y:0,opacity:1,duration:.55,stagger:.055,ease:'power3.out'},.16);}
   if(lenis){if(id||header.classList.contains('mobile-open'))lenis.stop();else if(!document.querySelector('dialog[open]'))lenis.start();}
@@ -152,7 +153,7 @@ document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');i
 // GSAP runs the choreography when available, Web Animations is the offline fallback.
 // Reset only after the whole element exits the viewport, never hide visible text on a refresh.
 const revealRecords=new Map();
-const revealSelector='[data-split],[data-rise],.product-card,[data-mask],.section-top,.catalogue-note,.footer-column,.footer-identity';
+const revealSelector='[data-split],[data-rise],.product-card,[data-mask],.section-top,.footer-column,.footer-identity';
 const ease='cubic-bezier(.22,1,.36,1)';
 function splitHeading(el){if(el.dataset.wrapped)return;el.dataset.wrapped='1';const parts=el.innerHTML.split(/<br\s*\/?\s*>/i);el.innerHTML=parts.map(t=>`<span class="reveal-line"><span class="reveal-line-inner">${t}</span></span>`).join('');}
 function getParts(el){if(el.hasAttribute('data-split')){splitHeading(el);return $$('.reveal-line-inner',el).map((n,i)=>({n,from:{yPercent:112,opacity:0},to:{yPercent:0,opacity:1},frames:[{transform:'translateY(112%)',opacity:0},{transform:'translateY(0)',opacity:1}],duration:1.08,delay:i*.105}));}
