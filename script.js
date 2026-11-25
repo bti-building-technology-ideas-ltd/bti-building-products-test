@@ -82,23 +82,63 @@ window.addEventListener('pageshow',updateScroll);
 function setMenu(id){clearTimeout(menuTimer);if(openMenu===id)return; if(menuTween)menuTween.kill();openMenu=id;header.classList.toggle('open',!!id);veil.hidden=!id;menuButtons.forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.menu===id)));menus.forEach(m=>{m.hidden=m.id!==id;if(gs)gs.set(m,{clearProps:'opacity,transform,clipPath'});});
   if(id&&motion){const panel=document.getElementById(id);menuTween=gs.timeline().fromTo(panel,{clipPath:'inset(0 0 100% 0)'},{clipPath:'inset(0 0 0% 0)',duration:.55,ease:'power4.inOut'}).fromTo($$('.mega-card',panel),{y:20,opacity:0},{y:0,opacity:1,duration:.55,stagger:.055,ease:'power3.out'},.16);}
   if(lenis){if(id||header.classList.contains('mobile-open'))lenis.stop();else if(!document.querySelector('dialog[open]'))lenis.start();}
-  if(id)stopHero();else scheduleHero();
+  scheduleHero();
 }
-function closeNav(){header.classList.remove('mobile-open');mobile.setAttribute('aria-expanded','false');setMenu('');if(lenis&&!document.querySelector('dialog[open]'))lenis.start();}
+function closeNav(){header.classList.remove('mobile-open');mobile.setAttribute('aria-expanded','false');setMenu('');if(lenis&&!document.querySelector('dialog[open]'))lenis.start();scheduleHero();}
 menuButtons.forEach(b=>{b.addEventListener('mouseenter',()=>{if(hoverMedia.matches)setMenu(b.dataset.menu)});b.addEventListener('click',e=>{if(hoverMedia.matches&&e.detail>0&&openMenu===b.dataset.menu)return;setMenu(openMenu===b.dataset.menu?'':b.dataset.menu);});});
 header.addEventListener('mouseenter',()=>clearTimeout(menuTimer));header.addEventListener('mouseleave',()=>{if(hoverMedia.matches)menuTimer=setTimeout(()=>setMenu(''),150)});
 $$('.nav-link:not(.menu-toggle)').forEach(a=>a.addEventListener('mouseenter',()=>{if(hoverMedia.matches)setMenu('')}));
-veil.addEventListener('click',closeNav);mobile.addEventListener('click',()=>{if(header.classList.contains('mobile-open'))closeNav();else{header.classList.add('mobile-open');mobile.setAttribute('aria-expanded','true');}});
+veil.addEventListener('click',closeNav);mobile.addEventListener('click',()=>{if(header.classList.contains('mobile-open'))closeNav();else{header.classList.add('mobile-open');mobile.setAttribute('aria-expanded','true');scheduleHero();}});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&(openMenu||header.classList.contains('mobile-open'))){closeNav();}});
 hoverMedia.addEventListener('change',closeNav);
 $$('.nav a,.mega a').forEach(a=>a.addEventListener('click',closeNav));
 // Hero carousel — one persistent timer, interruptible transitions and native fallback.
-const media=$('#hero-media');media.innerHTML=slides.map((s,i)=>`<div class="hero-layer ${i===0?'active':''} ${s.crop||''}"><img src="${s.image}" alt="${s.alt}" ${i===0?'fetchpriority="high"':'decoding="async"'}></div>`).join('');
-const layers=$$('.hero-layer'), choices=$$('.hero-choice');let active=0,heroTween=null,heroToken=0,heroTimer=0,heroPaused=reduced,heroInView=true;
+const media=$('#hero-media');
+slides.slice(1).forEach(slide=>{
+ const layer=document.createElement('div');
+ layer.className='hero-layer';
+ const image=new Image();
+ image.alt=slide.alt;
+ image.decoding='async';
+ image.fetchPriority='low';
+ layer.append(image);
+ media.append(layer);
+ image.src=slide.image;
+});
+const layers=$$('.hero-layer',media), choices=$$('.hero-choice');
+const heroImages=layers.map(layer=>$('img',layer));
+const imageReady=heroImages.map(()=>false);
 const heroPause=$('#hero-pause'),progress=$('#hero-progress');
-function stopHero(){clearTimeout(heroTimer);progress.classList.remove('running');}
-function scheduleHero(){stopHero();if(heroPaused||!heroInView||document.hidden||openMenu||document.querySelector('dialog[open]'))return;void progress.offsetWidth;progress.classList.add('running');heroTimer=setTimeout(()=>slideTo(active+1),6500);}
-function slideTo(index){index=(index+slides.length)%slides.length;if(index===active){scheduleHero();return;}const previous=active;active=index;const token=++heroToken;const incoming=layers[index],outgoing=layers[previous],s=slides[index];if(heroTween)heroTween.kill();
+let active=0,heroTween=null,heroToken=0,heroTimer=0,heroPaused=reduced,heroInView=true;
+
+function stopHero(){clearTimeout(heroTimer);heroTimer=0;progress.classList.remove('running');}
+function canPlayHero(){
+ return !heroPaused&&heroInView&&!document.hidden&&!openMenu&&!header.classList.contains('mobile-open')&&!document.querySelector('dialog[open]');
+}
+function scheduleHero(){
+ stopHero();
+ if(!canPlayHero()||!imageReady.some((ready,index)=>ready&&index!==active))return;
+ void progress.offsetWidth;
+ progress.classList.add('running');
+ heroTimer=setTimeout(()=>{
+   heroTimer=0;
+   if(!canPlayHero()){stopHero();return;}
+   for(let offset=1;offset<slides.length;offset++){
+     const next=(active+offset)%slides.length;
+     if(imageReady[next]){slideTo(next);return;}
+   }
+   stopHero();
+ },6500);
+}
+
+// Decode each image once and keep its element mounted for subsequent rotations.
+heroImages.forEach((img,index)=>{
+ img.decode().then(()=>{
+   imageReady[index]=true;
+   if(!heroTimer)scheduleHero();
+ }).catch(()=>{});
+});
+function slideTo(index){index=(index+slides.length)%slides.length;if(index===active||!imageReady[index])return;const previous=active;active=index;const token=++heroToken;const incoming=layers[index],outgoing=layers[previous],s=slides[index];if(heroTween)heroTween.kill();
   layers.forEach((el,i)=>{el.getAnimations().forEach(a=>a.cancel());$('img',el).getAnimations().forEach(a=>a.cancel());el.classList.toggle('active',i===index);el.classList.remove('leaving');if(gs)gs.set(el,{clearProps:'visibility,zIndex,clipPath,opacity'});});
   choices.forEach((b,i)=>{b.classList.toggle('is-active',i===index);b.setAttribute('aria-pressed',String(i===index));});
   const desc=$('#hero-description'),link=$('#hero-link'),caption=$('#hero-caption');desc.textContent=s.title;link.innerHTML=s.link+' <span>↗</span>';link.href=site+s.slug;caption.textContent=s.caption;$('#hero-count').textContent=`${pad(index+1)} / ${pad(slides.length)}`;
@@ -108,11 +148,19 @@ function slideTo(index){index=(index+slides.length)%slides.length;if(index===act
   scheduleHero();
 }
 let hoverTimer;choices.forEach((b,i)=>{b.addEventListener('mouseenter',()=>{if(hoverMedia.matches){clearTimeout(hoverTimer);hoverTimer=setTimeout(()=>slideTo(i),100)}});b.addEventListener('mouseleave',()=>clearTimeout(hoverTimer));b.addEventListener('focus',()=>slideTo(i));b.addEventListener('click',()=>slideTo(i));});
-$('#hero-prev').addEventListener('click',()=>slideTo(active-1));$('#hero-next').addEventListener('click',()=>slideTo(active+1));
+function stepHero(direction){
+ for(let offset=1;offset<slides.length;offset++){
+   const next=(active+direction*offset+slides.length)%slides.length;
+   if(imageReady[next]){slideTo(next);return;}
+ }
+}
+$('#hero-prev').addEventListener('click',()=>stepHero(-1));$('#hero-next').addEventListener('click',()=>stepHero(1));
 heroPause.addEventListener('click',()=>{heroPaused=!heroPaused;heroPause.setAttribute('aria-pressed',String(heroPaused));heroPause.setAttribute('aria-label',heroPaused?'Resume automatic slides':'Pause automatic slides');heroPause.textContent=heroPaused?'▷':'Ⅱ';scheduleHero();});
 if(reduced){heroPause.setAttribute('aria-pressed','true');heroPause.setAttribute('aria-label','Resume automatic slides');heroPause.textContent='▷';}
 new IntersectionObserver(([entry])=>{heroInView=entry.isIntersecting;scheduleHero();},{threshold:.15}).observe($('.hero'));
-document.addEventListener('visibilitychange',scheduleHero);header.addEventListener('mouseenter',stopHero);header.addEventListener('mouseleave',scheduleHero);$('.hero-select').addEventListener('mouseenter',stopHero);$('.hero-select').addEventListener('mouseleave',scheduleHero);
+document.addEventListener('visibilitychange',scheduleHero);
+window.addEventListener('pagehide',stopHero);
+window.addEventListener('pageshow',scheduleHero);
 // Filters: real product links, no simulated commerce. Each card has a separate image mask.
 const productGrid=$('#product-grid');
 function renderProducts(filter='all',animate=false){productGrid.innerHTML=products.filter(p=>filter==='all'||filter===p.group).map(p=>`<article class="product-card"><a class="product-image" href="${site+p.slug}" aria-label="Explore ${p.name}">${picture(p.image,p.name)}<span class="product-index">${pad(products.indexOf(p)+1)}</span><span class="circle-arrow" aria-hidden="true">↗</span></a><div class="product-body"><span class="product-type"><i></i>${p.type}</span><h3>${p.name}</h3><p>${p.detail}</p><a class="line-link" href="${site+p.slug}">Learn more <span>↗</span></a></div></article>`).join('');if(animate){registerReveals(productGrid);refresh();}}
@@ -124,21 +172,37 @@ function bindFilters(sel,key,render){$$(sel).forEach(btn=>btn.addEventListener('
 bindFilters('[data-product-filter]','productFilter',renderProducts);bindFilters('[data-gallery]','gallery',renderGallery);
 // Eight enquiry-led support topics; no promises of unconfirmed services.
 const support=[
- ['Product selection','Discuss material choices for your project.','./every-detail-every-stage.webp','Product consultation','Project team measuring a concrete block alongside paving and electrical samples'],
- ['Dimensions & variants','Explore product sizes, types and available variants.',images.solid,'Concrete Solid Brick'],
- ['Application guidance','Explore suitable applications for masonry and paving.',images.facade,'Product consultation'],
- ['Colour & finish options','Enquire about available paving colours and finishes.',images.tile,'Pavement Tiles'],
- ['Technical information','Find published product specifications and details.',images.hollow,'Concrete Hollow Block'],
- ['Quantity planning','Share your requirements for a quantity and supply enquiry.',images.unipaver,'Unipavers'],
- ['Electrical product enquiries','Explore Flick switches and sockets for your space.',images.flick,'Flick'],
- ['Quotation enquiries','Discuss product pricing and availability with our team.',images.paving,'Quotation support']
+ ['Product selection','Discuss material choices for your project.','Product consultation'],
+ ['Dimensions & variants','Explore product sizes, types and available variants.','Concrete Solid Brick'],
+ ['Application guidance','Explore suitable applications for masonry and paving.','Product consultation'],
+ ['Colour & finish options','Enquire about available paving colours and finishes.','Pavement Tiles'],
+ ['Technical information','Find published product specifications and details.','Concrete Hollow Block'],
+ ['Quantity planning','Share your requirements for a quantity and supply enquiry.','Unipavers'],
+ ['Electrical product enquiries','Explore Flick switches and sockets for your space.','Flick'],
+ ['Quotation enquiries','Discuss product pricing and availability with our team.','Quotation support']
 ];
-const supportList=$('#service-list'), supportMedia=$('#service-media'), supportPause=$('#service-pause');let supportActive=-1,supportTimer=0,supportPaused=reduced,supportVisible=false,supportHover=false,supportTween=null;
-supportList.innerHTML=support.map((s,i)=>`<article class="service-row" data-rise><button class="service-select" data-support="${i}" aria-pressed="false"><span class="service-num">${pad(i+1)}</span><div><h3>${s[0]}</h3><p>${s[1]}</p></div><span class="support-arrow">↗</span></button><button class="support-enquire" data-quote data-interest="${s[3]}">Enquire ↗</button></article>`).join('');
-function selectSupport(i){if(i===supportActive)return;supportActive=i;const item=support[i];$$('.service-select').forEach((b,n)=>{b.setAttribute('aria-pressed',String(n===i));b.closest('.service-row').classList.toggle('is-current',n===i);});$('#service-title').textContent=item[0];$('#service-index').textContent=pad(i+1)+' / 08';if(supportMedia.children.length===1&&supportMedia.firstElementChild.getAttribute('src')===item[2])return;if(supportTween)supportTween.kill();const existing=$$('img',supportMedia);const old=existing.at(-1);existing.slice(0,-1).forEach(im=>im.remove());if(old){old.getAnimations().forEach(a=>a.cancel());if(gs)gs.set(old,{clearProps:'clipPath,transform'});old.classList.remove('support-incoming');}const next=new Image();next.src=item[2];next.alt=item[4]||item[0];next.className='support-incoming';supportMedia.append(next);if(old){supportMedia.querySelectorAll('img').forEach(im=>{if(im!==old&&im!==next)im.remove();});if(nativeMotion){if(motion){supportTween=gs.fromTo(next,{clipPath:'inset(0 100% 0 0)',scale:1.06},{clipPath:'inset(0 0% 0 0)',scale:1,duration:.8,ease:'power3.inOut',onComplete:()=>{old.remove();next.classList.remove('support-incoming');}});}else{const a=next.animate([{clipPath:'inset(0 100% 0 0)',transform:'scale(1.06)'},{clipPath:'inset(0 0% 0 0)',transform:'scale(1)'}],{duration:800,easing:'cubic-bezier(.77,0,.18,1)'});a.onfinish=()=>{old.remove();next.classList.remove('support-incoming');};}}else{old.remove();next.classList.remove('support-incoming');}}}
-function scheduleSupport(){clearTimeout(supportTimer);if(!supportPaused&&supportVisible&&!supportHover&&!document.hidden)supportTimer=setTimeout(()=>{selectSupport((supportActive+1)%support.length);scheduleSupport();},5000);}
-$$('.service-select').forEach(b=>{const fn=()=>{selectSupport(Number(b.dataset.support));scheduleSupport();};b.addEventListener('click',fn);b.addEventListener('focus',fn);b.addEventListener('mouseenter',()=>{if(hoverMedia.matches)fn();});});supportList.addEventListener('mouseenter',()=>{supportHover=true;scheduleSupport();});supportList.addEventListener('mouseleave',()=>{supportHover=false;scheduleSupport();});supportPause.addEventListener('click',()=>{supportPaused=!supportPaused;supportPause.textContent=supportPaused?'▷':'Ⅱ';supportPause.setAttribute('aria-pressed',String(supportPaused));supportPause.setAttribute('aria-label',supportPaused?'Resume support image rotation':'Pause support image rotation');scheduleSupport();});if(reduced){supportPause.textContent='▷';supportPause.setAttribute('aria-pressed','true');supportPause.setAttribute('aria-label','Resume support image rotation');}
-selectSupport(0);new IntersectionObserver(([e])=>{supportVisible=e.isIntersecting;scheduleSupport();},{threshold:.15}).observe($('.service-visual'));document.addEventListener('visibilitychange',scheduleSupport);
+const supportList=$('#service-list');
+supportList.innerHTML=support.map((s,i)=>`<article class="service-row" data-rise><button class="service-select" data-support="${i}" aria-pressed="false"><span class="service-num">${pad(i+1)}</span><div><h3>${s[0]}</h3><p>${s[1]}</p></div><span class="support-arrow">↗</span></button><button class="support-enquire" data-quote data-interest="${s[2]}">Enquire ↗</button></article>`).join('');
+const supportChoices=$$('.service-select',supportList);
+const supportTitle=$('#service-title'), supportIndex=$('#service-index');
+
+function selectSupport(index){
+ supportChoices.forEach((button,n)=>{
+   const selected=n===index;
+   button.setAttribute('aria-pressed',String(selected));
+   button.closest('.service-row').classList.toggle('is-current',selected);
+ });
+ supportTitle.textContent=support[index][0];
+ supportIndex.textContent=pad(index+1)+' / '+pad(support.length);
+}
+
+supportChoices.forEach((button,index)=>{
+ const select=()=>selectSupport(index);
+ button.addEventListener('click',select);
+ button.addEventListener('focus',select);
+ button.addEventListener('mouseenter',()=>{if(hoverMedia.matches)select();});
+});
+selectSupport(0);
 // Modal interactions. Newsletter and quotation intentionally do not transmit data in this static demo.
 function openDialog(d){closeNav();if(d.open)return;stopHero();d.showModal();if(lenis)lenis.stop();if(motion)gs.fromTo(d,{opacity:0,y:18},{opacity:1,y:0,duration:.35,ease:'power3.out'});}
 $$('dialog').forEach(d=>{d.setAttribute('data-lenis-prevent','');d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}});d.addEventListener('close',()=>{if(lenis)lenis.start();scheduleHero();if(d.id==='film-dialog')$('#film-frame').replaceChildren();});});
