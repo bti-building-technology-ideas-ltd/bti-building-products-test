@@ -21,17 +21,17 @@ const images = {
   interior: uploads + 'photo-gallery/20191231_082720.jpg?bwg=1616570078',
 };
 const products = [
-  {name:'Concrete Hollow Block', type:'Masonry', group:'masonry', image:'./concrete-hollow-block.webp', detail:'Machine-made hollow blocks in a range of dimensions, designed for efficient masonry construction.', slug:'/concrete-hollow-block'},
-  {name:'Concrete Solid Brick', type:'Masonry', group:'masonry', image:'./02-concrete-solid-brick.webp', detail:'Solid concrete bricks with uniform dimensions and a consistent finish for modern building work.', slug:'/concrete-solid-brick'},
-  {name:'Unipavers', type:'Outdoor flooring', group:'paving', image:'./03-unipavers.webp', detail:'Interlocking concrete pavers in multiple colours and thicknesses for driveways, pathways and landscapes.', slug:'/unipavers'},
-  {name:'Pavement Tiles', type:'Surface solutions', group:'paving', image:'./04-pavement-tiles.webp', detail:'Explore colour and pattern options for walkways, terraces and outdoor flooring.', slug:'/pavement-tiles'},
-  {name:'Flick', type:'Electrical solutions', group:'electrical', image:'./05-flick.webp', detail:'Modern switches and sockets with minimal forms, thoughtful detailing and everyday functionality.', slug:'/flick/'},
+  {name:'Concrete Hollow Block', type:'Masonry', group:'masonry', image:'./concrete-hollow-block.webp', detail:'Machine-made hollow blocks in a range of dimensions, designed for efficient masonry construction.'},
+  {name:'Concrete Solid Brick', type:'Masonry', group:'masonry', image:'./02-concrete-solid-brick.webp', detail:'Solid concrete bricks with uniform dimensions and a consistent finish for modern building work.'},
+  {name:'Unipavers', type:'Outdoor flooring', group:'paving', image:'./03-unipavers.webp', detail:'Interlocking concrete pavers in multiple colours and thicknesses for driveways, pathways and landscapes.'},
+  {name:'Pavement Tiles', type:'Surface solutions', group:'paving', image:'./04-pavement-tiles.webp', detail:'Explore colour and pattern options for walkways, terraces and outdoor flooring.'},
+  {name:'Flick', type:'Electrical solutions', group:'electrical', image:'./05-flick.webp', detail:'Modern switches and sockets with minimal forms, thoughtful detailing and everyday functionality.'},
 ];
 const slides = [
-  {image:'./hero-masonry.webp', alt:'Architectural concrete masonry', title:'Concrete masonry for contemporary construction.', link:'Explore masonry', slug:'/concrete-hollow-block', caption:'MASONRY / DESIGN INSPIRATION'},
-  {image:'./hero-paving.webp', alt:'Outdoor interlocking paving', title:'Shape the outdoors with versatile paving solutions.', link:'Explore unipavers', slug:'/unipavers', caption:'PAVING / DESIGN INSPIRATION'},
-  {image:'./hero-surfaces.webp', alt:'Outdoor surface finishes', title:'Thoughtful finishes for everyday outdoor spaces.', link:'Explore pavement tiles', slug:'/pavement-tiles', caption:'SURFACES / DESIGN INSPIRATION'},
-  {image:'./hero-electrical.webp', alt:'Electrical switches and finishes', title:'Purposeful electrical details for modern interiors.', link:'Discover Flick', slug:'/flick/', caption:'FLICK / ELECTRICAL SOLUTIONS'},
+  {image:'./hero-masonry.webp', alt:'Architectural concrete masonry', title:'Concrete masonry for contemporary construction.', link:'Explore masonry', caption:'MASONRY / DESIGN INSPIRATION'},
+  {image:'./hero-paving.webp', alt:'Outdoor interlocking paving', title:'Shape the outdoors with versatile paving solutions.', link:'Explore unipavers', caption:'PAVING / DESIGN INSPIRATION'},
+  {image:'./hero-surfaces.webp', alt:'Outdoor surface finishes', title:'Thoughtful finishes for everyday outdoor spaces.', link:'Explore pavement tiles', caption:'SURFACES / DESIGN INSPIRATION'},
+  {image:'./hero-electrical.webp', alt:'Electrical switches and finishes', title:'Purposeful electrical details for modern interiors.', link:'Discover Flick', caption:'FLICK / ELECTRICAL SOLUTIONS'},
 ];
 const gallery = [
   {name:'Architectural screens', type:'architecture', image:images.facade, credit:'Design inspiration · bti blog'},
@@ -68,7 +68,7 @@ let refreshFrame; function refresh(){if(canTrigger){cancelAnimationFrame(refresh
 // Navigation: a mouse-hover mega menu, keyboard/touch click support, escape and outside dismissal.
 const header=$('#header'), veil=$('.menu-veil'), mobile=$('.mobile-toggle');
 const menuButtons=$$('.menu-toggle'), menus=$$('.mega');let openMenu='', menuTimer=0, menuTween=null;
-$('#mega-products').innerHTML=products.map(p=>`<a class="mega-card" href="${site+p.slug}">${picture(p.image,p.name)}<span>${p.name}<i>↗</i></span></a>`).join('');
+$('#mega-products').innerHTML=products.map(p=>`<a class="mega-card" href="#">${picture(p.image,p.name)}<span>${p.name}<i>↗</i></span></a>`).join('');
 const navShell=$('.nav-shell',header), navHero=$('.hero'), navFactory=$('#factory .factory-feature');
 let navFrame=0;
 
@@ -159,7 +159,7 @@ heroImages.forEach((img,index)=>{
 function slideTo(index){index=(index+slides.length)%slides.length;if(index===active||!imageReady[index])return;const previous=active;active=index;const token=++heroToken;const incoming=layers[index],outgoing=layers[previous],s=slides[index];if(heroTween)heroTween.kill();
   layers.forEach((el,i)=>{el.getAnimations().forEach(a=>a.cancel());$('img',el).getAnimations().forEach(a=>a.cancel());el.classList.toggle('active',i===index);el.classList.remove('leaving');if(gs)gs.set(el,{clearProps:'visibility,zIndex,clipPath,opacity'});});
   choices.forEach((b,i)=>{b.classList.toggle('is-active',i===index);b.setAttribute('aria-pressed',String(i===index));});
-  const desc=$('#hero-description'),link=$('#hero-link'),caption=$('#hero-caption');desc.textContent=s.title;link.innerHTML=s.link+' <span>↗</span>';link.href=site+s.slug;caption.textContent=s.caption;$('#hero-count').textContent=`${pad(index+1)} / ${pad(slides.length)}`;
+  const desc=$('#hero-description'),link=$('#hero-link'),caption=$('#hero-caption');desc.textContent=s.title;link.innerHTML=s.link+' <span>↗</span>';caption.textContent=s.caption;$('#hero-count').textContent=`${pad(index+1)} / ${pad(slides.length)}`;
   if(nativeMotion){outgoing.classList.add('leaving'); const done=()=>{if(token===heroToken)outgoing.classList.remove('leaving');};
     if(motion){heroTween=gs.timeline({onComplete:done}).fromTo(incoming,{clipPath:'inset(100% 0 0 0)'},{clipPath:'inset(0% 0 0 0)',duration:1.12,ease:'power4.inOut',clearProps:'clipPath'},0).fromTo($('img',incoming),{scale:1.13},{scale:1.035,duration:2,ease:'power3.out'},0).fromTo([desc,link,caption],{y:14,opacity:0},{y:0,opacity:1,duration:.65,stagger:.07,ease:'power3.out',clearProps:'transform,opacity'},.24);}
     else {const a=incoming.animate([{clipPath:'inset(100% 0 0 0)'},{clipPath:'inset(0% 0 0 0)'}],{duration:1050,easing:'cubic-bezier(.77,0,.18,1)'});a.onfinish=done;$('img',incoming).animate([{transform:'scale(1.13)'},{transform:'scale(1.035)'}],{duration:1800,easing:'cubic-bezier(.22,1,.36,1)'});[desc,link,caption].forEach((el,i)=>{el.getAnimations().forEach(a=>a.cancel());el.animate([{transform:'translateY(14px)',opacity:0},{transform:'translateY(0)',opacity:1}],{duration:650,delay:200+i*70,fill:'backwards',easing:'ease-out'});});}}
@@ -181,7 +181,7 @@ window.addEventListener('pagehide',stopHero);
 window.addEventListener('pageshow',scheduleHero);
 // Filters: real product links, no simulated commerce. Each card has a separate image mask.
 const productGrid=$('#product-grid');
-function renderProducts(filter='all',animate=false){productGrid.innerHTML=products.filter(p=>filter==='all'||filter===p.group).map(p=>`<article class="product-card"><a class="product-image" href="${site+p.slug}" aria-label="Explore ${p.name}">${picture(p.image,p.name)}<span class="product-index">${pad(products.indexOf(p)+1)}</span><span class="circle-arrow" aria-hidden="true">↗</span></a><div class="product-body"><span class="product-type"><i></i>${p.type}</span><h3>${p.name}</h3><p>${p.detail}</p><a class="line-link" href="${site+p.slug}">Learn more <span>↗</span></a></div></article>`).join('');if(animate){registerReveals(productGrid);refresh();}}
+function renderProducts(filter='all',animate=false){productGrid.innerHTML=products.filter(p=>filter==='all'||filter===p.group).map(p=>`<article class="product-card"><a class="product-image" href="#" aria-label="Explore ${p.name}">${picture(p.image,p.name)}<span class="product-index">${pad(products.indexOf(p)+1)}</span><span class="circle-arrow" aria-hidden="true">↗</span></a><div class="product-body"><span class="product-type"><i></i>${p.type}</span><h3>${p.name}</h3><p>${p.detail}</p><a class="line-link" href="#">Learn more <span>↗</span></a></div></article>`).join('');if(animate){registerReveals(productGrid);refresh();}}
 renderProducts();
 const galleryGrid=$('#gallery-grid');
 function renderGallery(filter='all',animate=false){if(animate)destroyGalleryMotion();galleryGrid.innerHTML=gallery.filter(g=>filter==='all'||filter===g.type).map(g=>`<button class="gallery-card${g.image===images.wall?' exposed-masonry':''}" data-gallery-index="${gallery.indexOf(g)}" aria-label="View ${g.name}">${picture(g.image,g.name)}<div class="gallery-copy"><div><h3 class="gallery-title-mask"><span>${g.name}</span></h3><p class="gallery-meta-mask"><span>${g.credit}</span></p></div><span aria-hidden="true">↗</span></div></button>`).join('');if(animate){registerReveals(galleryGrid);setupGalleryMotion();refresh();}}
@@ -230,7 +230,7 @@ galleryGrid.addEventListener('click',e=>{const b=e.target.closest('[data-gallery
 $('#watch-film').addEventListener('click',()=>{$('#film-frame').innerHTML='<iframe title="bti Hollow Blocks video" src="https://www.youtube-nocookie.com/embed/Fp3XaD7TlMY?autoplay=1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';openDialog($('#film-dialog'));});
 $('#newsletter-form').addEventListener('submit',e=>{e.preventDefault();$('.form-status',e.currentTarget).textContent='Demo only — no subscription was created. Connect the WordPress newsletter backend before launch.';});
 $('#quote-form').addEventListener('submit',e=>{e.preventDefault();$('.form-status',e.currentTarget).textContent='Preview only — no enquiry was sent. Use the live contact form to contact bti.';});
-document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a||!a.hash||!document.getElementById(a.hash.slice(1)))return;e.preventDefault();closeNav();toAnchor(a.hash);});
+document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;if(a.getAttribute('href')==='#'){e.preventDefault();return;}if(!a.hash||!document.getElementById(a.hash.slice(1)))return;e.preventDefault();closeNav();toAnchor(a.hash);});
 // Repeatable AOS-style reveals. Observer handles entering from either direction;
 // GSAP runs the choreography when available, Web Animations is the offline fallback.
 // Reset only after the whole element exits the viewport, never hide visible text on a refresh.
