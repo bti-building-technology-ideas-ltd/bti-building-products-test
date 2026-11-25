@@ -1,4 +1,4 @@
-/* bti Building Products — standalone homepage prototype.
+/* bti Building Products — homepage.
    Content data and animation settings are intentionally separate from the markup.
    All product images are from the current official bti site. */
 (() => {
@@ -221,15 +221,15 @@ supportChoices.forEach((button,index)=>{
  button.addEventListener('mouseenter',()=>{if(hoverMedia.matches)select();});
 });
 selectSupport(0);
-// Modal interactions. Newsletter and quotation intentionally do not transmit data in this static demo.
+// Modal interactions and form availability.
 function openDialog(d){closeNav();if(d.open)return;stopHero();d.showModal();if(lenis)lenis.stop();if(motion)gs.fromTo(d,{opacity:0,y:18},{opacity:1,y:0,duration:.35,ease:'power3.out'});}
 $$('dialog').forEach(d=>{d.setAttribute('data-lenis-prevent','');d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}});d.addEventListener('close',()=>{if(lenis)lenis.start();scheduleHero();if(d.id==='film-dialog')$('#film-frame').replaceChildren();});});
 $$('[data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('dialog').close()));
 $$('[data-quote]').forEach(b=>b.addEventListener('click',()=>{$('#quote-form select').value=b.dataset.interest||'General enquiry';openDialog($('#quote-dialog'));}));
 galleryGrid.addEventListener('click',e=>{const b=e.target.closest('[data-gallery-index]');if(!b)return;const g=gallery[Number(b.dataset.galleryIndex)];const image=$('#lightbox-image');image.style.visibility='';delete image.dataset.failed;image.src=g.image;image.alt=g.name;$('#lightbox-caption').textContent=g.name+' — '+g.credit;openDialog($('#image-dialog'));});
 $('#watch-film').addEventListener('click',()=>{$('#film-frame').innerHTML='<iframe title="bti Hollow Blocks video" src="https://www.youtube-nocookie.com/embed/Fp3XaD7TlMY?autoplay=1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';openDialog($('#film-dialog'));});
-$('#newsletter-form').addEventListener('submit',e=>{e.preventDefault();$('.form-status',e.currentTarget).textContent='Demo only — no subscription was created. Connect the WordPress newsletter backend before launch.';});
-$('#quote-form').addEventListener('submit',e=>{e.preventDefault();$('.form-status',e.currentTarget).textContent='Preview only — no enquiry was sent. Use the live contact form to contact bti.';});
+$('#newsletter-form').addEventListener('submit',e=>{e.preventDefault();$('.form-status',e.currentTarget).textContent='Online subscriptions are currently unavailable. Please try again later.';});
+$('#quote-form').addEventListener('submit',e=>{e.preventDefault();$('.form-status',e.currentTarget).textContent='Online enquiries are currently unavailable. Please call 16604 for assistance.';});
 document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;if(a.getAttribute('href')==='#'){e.preventDefault();return;}if(!a.hash||!document.getElementById(a.hash.slice(1)))return;e.preventDefault();closeNav();toAnchor(a.hash);});
 // Repeatable AOS-style reveals. Observer handles entering from either direction;
 // GSAP runs the choreography when available, Web Animations is the offline fallback.
