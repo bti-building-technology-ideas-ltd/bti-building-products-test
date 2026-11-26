@@ -601,31 +601,38 @@ body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.65 var(--
   width: 48px;
   height: 48px;
   align-content: center;
-  background: var(--action-background);
-  color: var(--action-ink, #fff);
-  box-shadow: 0 5px 18px #151a1538;
+  background: linear-gradient(155deg, var(--action-highlight), var(--action-background) 75%);
+  color: #fffaf1;
+  box-shadow: inset 0 1px 1px #ffffff6b, inset 0 -3px 4px #1115, 0 4px 9px #151a154d;
   animation: contact-rise .24s ease-out both;
 }
 
 .floating-action--whatsapp {
-  --action-background: #25d366;
-  --action-ink: #10281a;
+  --action-highlight: #28a85e;
+  --action-background: #11703a;
   animation-delay: .08s;
 }
 
-.floating-action--whatsapp svg {
-  width: 30px;
-  height: 30px;
+.floating-action--whatsapp img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 1px #1118);
 }
 
 .floating-action--phone {
+  --action-highlight: #4b8ac4;
   --action-background: #24588c;
   animation-delay: .04s;
 }
 
 .floating-action--enquiry {
-  --action-background: #e2b66b;
-  --action-ink: #302315;
+  --action-highlight: #ba7939;
+  --action-background: #87501e;
+}
+
+.floating-action svg {
+  filter: drop-shadow(0 1.5px 1px #1118);
 }
 
 .floating-action:is(:hover, :focus-visible) {
@@ -651,7 +658,7 @@ body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.65 var(--
 }
 
 .gallery-card[data-gallery-index="0"] {
-  border-radius: var(--gallery-corner) var(--gallery-curve) var(--gallery-corner) var(--gallery-corner);
+  border-radius: var(--gallery-curve) var(--gallery-corner) var(--gallery-corner) var(--gallery-corner);
 }
 
 .gallery-card[data-gallery-index="1"] {
