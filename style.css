@@ -478,3 +478,40 @@ body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.65 var(--
 #quote-form .form-status:empty {
   display: none;
 }
+
+.product-specifications {
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(24px, 4vw, 52px);
+}
+
+.specifications-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  max-width: 100%;
+  min-height: 48px;
+  padding: 5px 5px 5px 17px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--utility-charcoal);
+  color: #f7f6f3;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.specifications-link span {
+  display: grid;
+  flex: 0 0 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 50%;
+  background: #f7f6f3;
+  color: var(--utility-charcoal);
+  font-size: 18px;
+}
+
+.specifications-link:is(:hover, :focus-visible) {
+  background: #3b4935;
+}
