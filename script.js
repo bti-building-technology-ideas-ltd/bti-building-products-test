@@ -34,8 +34,8 @@ const slides = [
   {image:'./hero-electrical.webp', alt:'Electrical switches and finishes', title:'Purposeful electrical details for modern interiors.', link:'Discover Flick', caption:'FLICK / ELECTRICAL SOLUTIONS'},
 ];
 const gallery = [
-  {name:'Architectural screens', type:'architecture', image:images.facade, credit:'Design inspiration · bti blog'},
-  {name:'Outdoor surfaces', type:'outdoor', image:images.paving, credit:'Design inspiration · bti blog'},
+  {name:'Architectural screens', type:'architecture', image:'./gallery-architectural-screens.webp', credit:'Design inspiration · bti blog'},
+  {name:'Outdoor surfaces', type:'outdoor', image:'./gallery-outdoor-surfaces.webp', credit:'Design inspiration · bti blog'},
   {name:'Landscape possibilities', type:'outdoor', image:images.landscape, credit:'bti photo gallery'},
   {name:'Exposed masonry', type:'architecture', image:images.wall, credit:'bti photo gallery'},
   {name:'Interior feature walls', type:'interior', image:images.interior, credit:'bti photo gallery'},

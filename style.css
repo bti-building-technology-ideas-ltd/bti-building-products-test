@@ -661,7 +661,7 @@ body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.65 var(--
 }
 
 .gallery-card[data-gallery-index="0"] {
-  border-radius: var(--gallery-curve) var(--gallery-corner) var(--gallery-corner) var(--gallery-corner);
+  border-radius: var(--gallery-curve) var(--gallery-corner) var(--gallery-corner) var(--gallery-round);
 }
 
 .gallery-card[data-gallery-index="1"] {
