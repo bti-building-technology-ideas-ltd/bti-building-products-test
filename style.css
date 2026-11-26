@@ -542,8 +542,7 @@ body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.65 var(--
   height: 42px;
 }
 
-.footer-social a:is(:hover, :focus-visible),
-.floating-action:is(:hover, :focus-visible) {
+.footer-social a:is(:hover, :focus-visible) {
   background: #e7efdf;
   color: #20241f;
 }
@@ -602,13 +601,36 @@ body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.65 var(--
   width: 48px;
   height: 48px;
   align-content: center;
-  background: var(--utility-charcoal);
+  background: var(--action-background);
+  color: var(--action-ink, #fff);
   box-shadow: 0 5px 18px #151a1538;
   animation: contact-rise .24s ease-out both;
 }
 
-.floating-action:nth-child(1) { animation-delay: .08s; }
-.floating-action:nth-child(2) { animation-delay: .04s; }
+.floating-action--whatsapp {
+  --action-background: #25d366;
+  --action-ink: #10281a;
+  animation-delay: .08s;
+}
+
+.floating-action--whatsapp svg {
+  width: 30px;
+  height: 30px;
+}
+
+.floating-action--phone {
+  --action-background: #24588c;
+  animation-delay: .04s;
+}
+
+.floating-action--enquiry {
+  --action-background: #e2b66b;
+  --action-ink: #302315;
+}
+
+.floating-action:is(:hover, :focus-visible) {
+  border-color: currentColor;
+}
 .floating-action span { font-size: 9px; line-height: 1; }
 
 @keyframes contact-rise {
