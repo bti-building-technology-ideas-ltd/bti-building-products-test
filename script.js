@@ -188,7 +188,7 @@ function renderGallery(filter='all',animate=false){if(animate)destroyGalleryMoti
 renderGallery();
 function bindFilters(sel,key,render){$$(sel).forEach(btn=>btn.addEventListener('click',()=>{$$(sel).forEach(b=>{b.classList.toggle('active',b===btn);b.setAttribute('aria-pressed',String(b===btn))});render(btn.dataset[key],true);}));}
 bindFilters('[data-product-filter]','productFilter',renderProducts);bindFilters('[data-gallery]','gallery',renderGallery);
-// Eight enquiry-led support topics; no promises of unconfirmed services.
+// Project support topics and their enquiry categories.
 const support=[
  ['Product selection','Discuss material choices for your project.','Product consultation'],
  ['Dimensions & variants','Explore product sizes, types and available variants.','Concrete Solid Brick'],
@@ -197,18 +197,24 @@ const support=[
  ['Technical information','Find published product specifications and details.','Concrete Hollow Block'],
  ['Quantity planning','Share your requirements for a quantity and supply enquiry.','Unipavers'],
  ['Electrical product enquiries','Explore Flick switches and sockets for your space.','Flick'],
+ ['Sample enquiries','Ask about material samples for reviewing texture and finish.','Product consultation'],
+ ['Delivery planning','Discuss delivery requirements and expected lead times for your site.','Quotation support'],
  ['Quotation enquiries','Discuss product pricing and availability with our team.','Quotation support']
 ];
 const supportList=$('#service-list');
 supportList.innerHTML=support.map((s,i)=>`<article class="service-row" data-rise><button class="service-select" data-support="${i}" aria-pressed="false"><span class="service-num">${pad(i+1)}</span><div><h3>${s[0]}</h3><p>${s[1]}</p></div><span class="support-arrow">↗</span></button><button class="support-enquire" data-quote data-interest="${s[2]}">Enquire ↗</button></article>`).join('');
 const supportChoices=$$('.service-select',supportList);
 const supportTitle=$('#service-title'), supportIndex=$('#service-index');
+const supportRows=$$('.service-row',supportList);
+let activeSupport=-1, supportFrame=0;
 
 function selectSupport(index){
+ if(index===activeSupport)return;
+ activeSupport=index;
  supportChoices.forEach((button,n)=>{
    const selected=n===index;
    button.setAttribute('aria-pressed',String(selected));
-   button.closest('.service-row').classList.toggle('is-current',selected);
+   supportRows[n].classList.toggle('is-current',selected);
  });
  supportTitle.textContent=support[index][0];
  supportIndex.textContent=pad(index+1)+' / '+pad(support.length);
@@ -221,6 +227,27 @@ supportChoices.forEach((button,index)=>{
  button.addEventListener('mouseenter',()=>{if(hoverMedia.matches)select();});
 });
 selectSupport(0);
+
+function syncSupportToScroll(){
+ if(supportFrame)return;
+ supportFrame=requestAnimationFrame(()=>{
+   supportFrame=0;
+   const list=supportList.getBoundingClientRect();
+   if(list.top>=innerHeight||list.bottom<=0)return;
+   const readingLine=innerHeight*.62;
+   const listLine=readingLine-list.top;
+   let current=0;
+   for(let i=1;i<supportRows.length;i++){
+     if(supportRows[i].offsetTop-supportRows[0].offsetTop>listLine)break;
+     current=i;
+   }
+   selectSupport(current);
+ });
+}
+
+window.addEventListener('scroll',syncSupportToScroll,{passive:true});
+window.addEventListener('resize',syncSupportToScroll,{passive:true});
+window.addEventListener('pageshow',syncSupportToScroll);
 const contactWidget=$('.floating-contact');
 const contactToggle=$('.floating-message',contactWidget);
 const contactActions=$('#floating-actions');
