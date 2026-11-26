@@ -221,6 +221,27 @@ supportChoices.forEach((button,index)=>{
  button.addEventListener('mouseenter',()=>{if(hoverMedia.matches)select();});
 });
 selectSupport(0);
+const contactWidget=$('.floating-contact');
+const contactToggle=$('.floating-message',contactWidget);
+const contactActions=$('#floating-actions');
+function setContactOpen(open){
+ contactToggle.setAttribute('aria-expanded',String(open));
+ contactActions.hidden=!open;
+}
+contactToggle.addEventListener('click',()=>setContactOpen(contactActions.hidden));
+document.addEventListener('click',event=>{
+ if(!contactWidget.contains(event.target)||event.target.closest('.floating-action:not([data-quote])'))setContactOpen(false);
+});
+contactWidget.addEventListener('keydown',event=>{
+ if(event.key==='Escape'&&!contactActions.hidden){
+   setContactOpen(false);
+   contactToggle.focus();
+ }
+});
+$('.floating-action[data-quote]').addEventListener('click',()=>{
+ contactToggle.focus();
+ setContactOpen(false);
+});
 // Modal interactions and form availability.
 function openDialog(d){closeNav();if(d.open)return;stopHero();d.showModal();if(lenis)lenis.stop();if(motion)gs.fromTo(d,{opacity:0,y:18},{opacity:1,y:0,duration:.35,ease:'power3.out'});}
 $$('dialog').forEach(d=>{d.setAttribute('data-lenis-prevent','');d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}});d.addEventListener('close',()=>{if(lenis)lenis.start();scheduleHero();if(d.id==='film-dialog')$('#film-frame').replaceChildren();});});

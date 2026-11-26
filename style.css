@@ -515,3 +515,108 @@ body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.65 var(--
 .specifications-link:is(:hover, :focus-visible) {
   background: #3b4935;
 }
+
+.footer {
+  padding-top: clamp(38px, 5vw, 68px);
+}
+
+.footer-social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.footer-social a,
+.floating-action {
+  display: grid;
+  place-items: center;
+  border: 1px solid #ffffff42;
+  border-radius: 50%;
+  color: #f4f4ed;
+  transition: background .2s, color .2s;
+}
+
+.footer-social a {
+  width: 42px;
+  height: 42px;
+}
+
+.footer-social a:is(:hover, :focus-visible),
+.floating-action:is(:hover, :focus-visible) {
+  background: #e7efdf;
+  color: #20241f;
+}
+
+.footer-social svg,
+.footer-contact svg,
+.floating-action svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+}
+
+.footer-contact address {
+  display: grid;
+  gap: 13px;
+  color: #d3d8ce;
+  font: inherit;
+  font-size: 13px;
+}
+
+.footer-contact address div {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  overflow-wrap: anywhere;
+}
+
+.footer-contact address svg {
+  margin-top: 2px;
+  color: #b7c6ae;
+}
+
+.floating-contact {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  z-index: 44;
+}
+
+.floating-contact .floating-message {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+}
+
+.floating-actions {
+  position: absolute;
+  right: 3px;
+  bottom: calc(100% + 10px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.floating-action {
+  width: 48px;
+  height: 48px;
+  align-content: center;
+  background: var(--utility-charcoal);
+  box-shadow: 0 5px 18px #151a1538;
+  animation: contact-rise .24s ease-out both;
+}
+
+.floating-action:nth-child(1) { animation-delay: .08s; }
+.floating-action:nth-child(2) { animation-delay: .04s; }
+.floating-action span { font-size: 9px; line-height: 1; }
+
+@keyframes contact-rise {
+  from { opacity: 0; transform: translateY(12px) scale(.92); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floating-action,
+  .footer-social a { animation: none; transition: none; }
+}
